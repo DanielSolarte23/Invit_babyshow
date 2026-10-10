@@ -301,4 +301,23 @@
 
 </main>
 
+<!-- ═══════════════════════════════════════════════════════════════
+     ESCENA FINAL — el libro se cierra
+═══════════════════════════════════════════════════════════════ -->
+<div id="book-closing" class="book-closing" hidden>
+  <div class="closing-scene">
+    <div class="dragon-balls" aria-hidden="true">
+      <span class="db db-1"></span><span class="db db-2"></span><span class="db db-3"></span>
+      <span class="db db-4"></span><span class="db db-5"></span><span class="db db-6"></span>
+      <span class="db db-7"></span>
+    </div>
+    <button type="button" id="book-reopen" class="closed-book" aria-label="Volver a abrir el libro">
+      <span class="closed-book-spine" aria-hidden="true"></span>
+    </button>
+    <p class="closing-final-text">Te esperamos</p>
+    <p class="closing-final-sub">Con amor, {{event.parents.dad}} &amp; {{event.parents.mom}}</p>
+    <button type="button" id="book-reopen-link" class="btn-again">&lsaquo; Volver al libro</button>
+  </div>
+</div>
+
 <script src="/js/main.js"></script>

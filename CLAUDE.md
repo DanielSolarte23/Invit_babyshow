@@ -59,6 +59,16 @@ Ni las vistas ni el CSS llevan textos de evento. Para cambiar fecha, lugar, dres
 
 La portada (hoja 0) es la única puerta de entrada: su botón **ABRIR EL LIBRO** es el gesto de usuario que permite arrancar el audio (política de autoplay). `openBook()` también se dispara si alguien avanza con swipe desde la portada.
 
+#### Escena final (`#book-closing`)
+
+En la última hoja (índice `TOTAL-1`), `nextPage()` ya no llama a `goTo()` — llama a `closeBook()`. Las hojas giran cada una por su cuenta (0° a -180°); no hay un libro 3D que converja en una tapa cerrada, así que el "cierre" es una escena aparte, no más grados de giro:
+
+1. `.book` recibe la clase `closing-out` → `transform:scale(.1)` + `opacity:0` (efecto cámara alejándose). `scale()` desde el centro nunca se sale de encuadre sin importar el tamaño de pantalla — por eso se prefirió sobre reposicionar/centrar el libro a mitad de camino.
+2. A los `CLOSE_MS` (600ms, debe coincidir con la transición `.6s` del CSS) se oculta `.book` y se muestra `#book-closing`: un libro cerrado dibujado en CSS (`.closed-book` + `.closed-book-spine`, mismo degradado que `.book-spine`) con las esferas del dragón (reusa `.dragon-balls`/`.db` de la portada) y el texto final "Te esperamos".
+
+Disponible solo vía el botón "siguiente" (su `aria-label` cambia a "Cerrar el libro" en esa hoja) y la tecla →. **No** está enganchado al gesto de arrastre/swipe — intentar deslizar hacia adelante en la última hoja sigue sin hacer nada, igual que antes de esta función.
+
+**Volver** (`reopenBook()`): dos disparadores en la escena, el propio dibujo del libro cerrado (`#book-reopen`, ahora un `<button>` real por accesibilidad, no un `div` decorativo) y el texto "‹ Volver al libro" (`#book-reopen-link`). Hace la secuencia inversa — API espejo, no una función aparte reimplementando lo mismo: `.closing-scene` se desvanece (`REOPEN_MS` = 500ms, debe coincidir con su transición `.5s`), luego se oculta `#book-closing` y se le quita `closing-out` a `.book`. La transición de `.book` vive en su regla base (no solo en `.closing-out`) precisamente para que anime igual de ida y de vuelta al quitar la clase. Al terminar llama a `paint()` en vez de restaurar cada atributo a mano — `current` nunca cambió durante el cierre, así que `paint()` deja flechas/aria-labels/swipe-hint exactamente como estaban.
 #### Parpadeo al cruzar los 90° ("hinge-veil")
 
 Una hoja que gira sobre su borde izquierdo se ve, en el instante en que pasa por los 90°, proyectada casi de canto: su ancho en pantalla se comprime a casi nada y todo su contenido (colores, texto) queda aplastado en esa franja delgada. Como esa franja va "mostrando" distintas partes comprimidas de la hoja en frames sucesivos, se percibe como un parpadeo claro/oscuro — **es geometría del giro 3D, no un bug de un navegador** (se reprodujo igual en Safari y Chrome).

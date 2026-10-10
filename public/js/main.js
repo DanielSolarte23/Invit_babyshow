@@ -26,6 +26,7 @@ const rsvpDone    = document.getElementById('rsvp-done');
 const rsvpWaLink  = document.getElementById('rsvp-wa-link');
 const wishInput   = document.getElementById('guest-wish');
 const wishCount   = document.getElementById('wish-count');
+const bookClosing = document.getElementById('book-closing');
 
 const TOTAL = leaves.length;
 
@@ -48,9 +49,10 @@ function paint() {
     }
   });
 
-  // Navegación
+  // Navegación — en la última hoja, "siguiente" cierra el libro en vez de voltear
   navPrev.hidden = current === 0;
-  navNext.hidden = current === 0 || current === TOTAL - 1;
+  navNext.hidden = current === 0;
+  navNext.setAttribute('aria-label', current === TOTAL - 1 ? 'Cerrar el libro' : 'Página siguiente');
   if (swipeHint) swipeHint.hidden = current !== 1;
 
   // Puntos
@@ -96,8 +98,52 @@ function goTo(target) {
   }, FLIP_MS);
 }
 
-function nextPage() { goTo(current + 1); }
+function nextPage() {
+  if (current === TOTAL - 1) { closeBook(); return; }
+  goTo(current + 1);
+}
 function prevPage() { goTo(current - 1); }
+
+/* ═══════════════════════════════════════════════════════════════
+   Escena final — el libro se cierra
+═══════════════════════════════════════════════════════════════ */
+const CLOSE_MS = 600;
+const REOPEN_MS = 500;
+
+function closeBook() {
+  if (!bookClosing || book.classList.contains('closing-out')) return;
+
+  book.classList.add('closing-out');
+  navPrev.hidden = true;
+  navNext.hidden = true;
+  dotsNav.hidden = true;
+  if (swipeHint) swipeHint.hidden = true;
+
+  window.setTimeout(() => {
+    book.hidden = true;
+    bookClosing.hidden = false;
+    requestAnimationFrame(() => bookClosing.classList.add('is-in'));
+  }, CLOSE_MS);
+}
+
+function reopenBook() {
+  if (!bookClosing || bookClosing.hidden) return;
+
+  bookClosing.classList.remove('is-in');
+  dotsNav.hidden = false;
+
+  window.setTimeout(() => {
+    bookClosing.hidden = true;
+    book.hidden = false;
+    requestAnimationFrame(() => {
+      book.classList.remove('closing-out');
+      paint(); // restaura flechas, aria-labels y swipe-hint según la hoja actual
+    });
+  }, REOPEN_MS);
+}
+
+document.getElementById('book-reopen')?.addEventListener('click', reopenBook);
+document.getElementById('book-reopen-link')?.addEventListener('click', reopenBook);
 
 function focusPage() {
   const scroll = leaves[current].querySelector('.page-scroll');

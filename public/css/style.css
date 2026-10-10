@@ -14,7 +14,7 @@
   --gold: #ffc02e;
   --gold-deep: #e0a010;
   --pink: #e91e63;
-  --pink-soft: #fbd3e0;
+  --pink-soft: #fbedf1;
   --berry-deep: #7d1537;
 
   --radius: 16px;
@@ -51,7 +51,7 @@ img { max-width: 100%; display: block; }
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  background: linear-gradient(180deg, var(--pink) 0%, #ffffff 100%);
+  background: linear-gradient(180deg, #812d50 0%, var(--pink-soft) 100%);
 }
 
 .cloud {
@@ -111,6 +111,9 @@ img { max-width: 100%; display: block; }
   perspective: 2800px;
   perspective-origin: 50% 50%;
   filter: drop-shadow(0 26px 45px rgba(0, 0, 0, .55));
+  /* En la regla base (no solo en .closing-out) para que anime igual de ida
+     (cerrar) y de vuelta (reabrir) al quitar la clase. */
+  transition: transform .6s cubic-bezier(.4, 0, .2, 1), opacity .6s ease;
 }
 
 /* Lomo / encuadernado */
@@ -290,8 +293,8 @@ img { max-width: 100%; display: block; }
    PORTADA
 ═══════════════════════════════════════════════════════ */
 .cover {
-  background: #ff6fa3;
-  box-shadow: inset 0 0 0 1px rgba(255, 192, 46, .45), inset 0 0 60px rgba(0, 0, 0, .5);
+  background: #ddc2cd;
+  box-shadow: inset 0 0 0 1px rgba(255, 192, 46, .45), inset 0 0 40px rgba(0, 0, 0, .1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -300,7 +303,7 @@ img { max-width: 100%; display: block; }
   padding: 1.6rem 1.2rem 1.4rem 2rem;
   text-align: center;
 }
-.cover::before { background: linear-gradient(90deg, rgba(0, 0, 0, .4), transparent); }
+.cover::before { background: linear-gradient(90deg, rgba(0, 0, 0, .18), transparent); }
 
 .cover-glow {
   position: absolute;
@@ -346,7 +349,7 @@ img { max-width: 100%; display: block; }
   position: relative; z-index: 2;
   font-family: 'Caveat', cursive;
   font-size: 1.5rem;
-  color: var(--pink-soft);
+  color: var(--pink);
   letter-spacing: 1px;
   line-height: 1;
 }
@@ -390,8 +393,8 @@ img { max-width: 100%; display: block; }
   font-weight: 700;
   font-size: clamp(2rem, 9vw, 2.8rem);
   line-height: 1;
-  color: #fff;
-  text-shadow: 0 0 18px rgba(233, 30, 99, .7);
+  color: var(--berry-deep);
+  text-shadow: 0 2px 10px rgba(255, 255, 255, .6);
 }
 
 .cover-parents {
@@ -399,7 +402,7 @@ img { max-width: 100%; display: block; }
   font-size: .9rem;
   font-weight: 700;
   letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, .85);
+  color: rgba(125, 21, 55, .8);
   text-transform: uppercase;
 }
 
@@ -430,7 +433,7 @@ img { max-width: 100%; display: block; }
 .cover-hint {
   position: relative; z-index: 2;
   font-size: .72rem;
-  color: rgba(255, 255, 255, .55);
+  color: rgba(125, 21, 55, .55);
   letter-spacing: 1px;
 }
 
@@ -1045,6 +1048,83 @@ img { max-width: 100%; display: block; }
   * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
   .leaf { transition-duration: .25s; }
   .cloud { animation: none; }
+  .book.closing-out, .closing-scene { transition-duration: .2s; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   Escena final — el libro se cierra
+   ───────────────────────────────────────────────────────
+   No hay una "tapa" física que converja: las hojas giran cada una por su
+   cuenta (0° a -180°), no hay un libro 3D que se cierre de verdad. Por eso
+   el cierre es una escena aparte: la cámara "se aleja" (el libro entero se
+   encoge y se desvanece) y entra esta escena con un libro cerrado dibujado
+   en CSS — así nunca se sale de encuadre sin importar el tamaño de pantalla,
+   a diferencia de reposicionar/centrar el libro a mitad de un giro.
+═══════════════════════════════════════════════════════ */
+.book.closing-out {
+  transform: scale(.1);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.book-closing {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #812d50 0%, var(--pink-soft) 100%);
+}
+.book-closing[hidden] { display: none; }
+
+.closing-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  opacity: 0;
+  transform: scale(.82);
+  transition: opacity .5s ease, transform .5s cubic-bezier(.34, 1.56, .64, 1);
+}
+.book-closing.is-in .closing-scene {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.closed-book {
+  position: relative;
+  width: 132px;
+  height: 174px;
+  border: 0;
+  padding: 0;
+  border-radius: 4px 14px 14px 4px;
+  background: #ffd1e3;
+  box-shadow: 0 20px 42px rgba(0, 0, 0, .4), inset 0 0 0 1px rgba(255, 192, 46, .45);
+  cursor: pointer;
+  transition: transform .18s;
+}
+.closed-book:hover { transform: scale(1.03); }
+.closed-book-spine {
+  position: absolute;
+  left: -2px; top: 0; bottom: 0;
+  width: 13px;
+  border-radius: 6px 2px 2px 6px;
+  background: linear-gradient(90deg, #3d2a14 0%, #6b4a22 35%, #8a6430 60%, rgba(138, 100, 48, .35) 100%);
+  box-shadow: inset -3px 0 6px rgba(0, 0, 0, .35);
+}
+
+.closing-final-text {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(1.7rem, 7vw, 2.2rem);
+  color: var(--berry-deep);
+  letter-spacing: 1px;
+}
+.closing-final-sub {
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--pink);
 }
 
 /* ═══════════════════════════════════════════════════════
