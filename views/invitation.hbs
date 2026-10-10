@@ -1,0 +1,304 @@
+<!-- Audio de fondo -->
+<audio id="bg-audio" loop preload="auto">
+  <source src="/audio/babyshower.mpeg" type="audio/mpeg" />
+</audio>
+
+<!-- Fondo: cielo + nubes Dragon Ball -->
+<div class="sky" aria-hidden="true">
+  <span class="cloud cloud-1"></span>
+  <span class="cloud cloud-2"></span>
+  <span class="cloud cloud-3"></span>
+  <span class="spark spark-1"></span>
+  <span class="spark spark-2"></span>
+  <span class="spark spark-3"></span>
+  <span class="spark spark-4"></span>
+</div>
+
+<!-- Toast -->
+<div id="toast-message" class="toast" role="status" aria-live="polite"></div>
+
+<!-- Control de música -->
+<button id="music-toggle" class="music-toggle is-off" aria-label="Activar o silenciar música">
+  <span class="music-icon">&#9834;</span>
+</button>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     EL LIBRO
+═══════════════════════════════════════════════════════════════ -->
+<main class="stage">
+
+  <div class="book" id="book">
+    <div class="book-spine" aria-hidden="true"></div>
+
+    <!-- ──────────────── PÁGINA 0 · PORTADA ──────────────── -->
+    <article class="leaf" data-page="0">
+      <div class="face face-front cover">
+        <div class="cover-glow" aria-hidden="true"></div>
+
+        <div class="dragon-balls" aria-hidden="true">
+          <span class="db db-1"></span><span class="db db-2"></span><span class="db db-3"></span>
+          <span class="db db-4"></span><span class="db db-5"></span><span class="db db-6"></span>
+          <span class="db db-7"></span>
+        </div>
+
+        <p class="cover-eyebrow">Baby Shower</p>
+        <h1 class="cover-title">UNA NUEVA<br />SAIYAJIN<br />EST&Aacute; POR LLEGAR</h1>
+
+        <div class="cover-art">
+          <img src="/img/bebe.png" alt="" class="cover-img" />
+          <div class="cover-img-fallback">&#128118;</div>
+        </div>
+
+        {{#if event.baby.hasName}}
+          <p class="cover-baby">{{event.baby.name}}</p>
+        {{/if}}
+
+        <p class="cover-parents">{{event.parents.dadFull}} &amp; {{event.parents.momFull}}</p>
+
+        <button id="btn-open" class="btn-open">ABRIR EL LIBRO</button>
+        <p class="cover-hint">Sube el volumen &#128266;</p>
+      </div>
+      <div class="face face-back"><div class="back-mark" aria-hidden="true"></div></div>
+    </article>
+
+    <!-- ──────────────── PÁGINA 1 · FRASE PARA LA BEBÉ ──────────────── -->
+    <article class="leaf" data-page="1">
+      <div class="face face-front">
+        <div class="page-scroll">
+          <p class="chapter">{{event.phrase.eyebrow}}</p>
+          <h2 class="page-title">{{event.phrase.title}}</h2>
+          <div class="rule" aria-hidden="true"></div>
+
+          <div class="phrase">
+            {{#each event.phrase.lines}}
+              <p class="phrase-line">{{this}}</p>
+            {{/each}}
+          </div>
+
+          <p class="phrase-to">Para {{event.baby.display}} &#128151;</p>
+        </div>
+        <span class="page-num">1</span>
+      </div>
+      <div class="face face-back"><div class="back-mark" aria-hidden="true"></div></div>
+    </article>
+
+    <!-- ──────────────── PÁGINA 2 · DÓNDE ──────────────── -->
+    <article class="leaf" data-page="2">
+      <div class="face face-front">
+        <div class="page-scroll">
+          <p class="chapter">Cap&iacute;tulo II</p>
+          <h2 class="page-title">&iquest;D&oacute;nde?</h2>
+          <div class="rule" aria-hidden="true"></div>
+
+          <p class="where-place">{{event.where.place}}</p>
+          <p class="where-address">{{event.where.address}}</p>
+          <p class="where-city">{{event.where.city}}</p>
+
+          <div class="map-wrap">
+            <iframe
+              src="{{{mapSrc}}}"
+              width="100%" height="190" style="border:0;"
+              allowfullscreen="" loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              title="Ubicaci&oacute;n del evento"></iframe>
+          </div>
+        </div>
+        <span class="page-num">2</span>
+      </div>
+      <div class="face face-back"><div class="back-mark" aria-hidden="true"></div></div>
+    </article>
+
+    <!-- ──────────────── PÁGINA 3 · CUÁNDO + CÓMO VENIR ──────────────── -->
+    <article class="leaf" data-page="3">
+      <div class="face face-front">
+        <div class="page-scroll">
+          <p class="chapter">Cap&iacute;tulo III</p>
+
+          <div class="split-half">
+            <h2 class="split-title">&iquest;Cu&aacute;ndo?</h2>
+            <div class="rule rule-sm" aria-hidden="true"></div>
+
+            <p class="page-lead">{{event.when.weekday}}</p>
+
+            <div class="when-grid">
+              <div class="when-item">
+                <span class="when-label">D&Iacute;A</span>
+                <span class="when-value">{{event.when.day}}</span>
+              </div>
+              <span class="when-sep" aria-hidden="true"></span>
+              <div class="when-item">
+                <span class="when-label">MES</span>
+                <span class="when-value">{{event.when.month}}</span>
+              </div>
+              <span class="when-sep" aria-hidden="true"></span>
+              <div class="when-item">
+                <span class="when-label">HORA</span>
+                <span class="when-value">{{event.when.time}}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="split-divider" aria-hidden="true"></div>
+
+          <div class="split-half">
+            <h2 class="split-title">&iquest;C&oacute;mo venir?</h2>
+            <div class="rule rule-sm" aria-hidden="true"></div>
+            <p class="detail-text">{{event.details.dressCode}}</p>
+          </div>
+        </div>
+        <span class="page-num">3</span>
+      </div>
+      <div class="face face-back"><div class="back-mark" aria-hidden="true"></div></div>
+    </article>
+
+    <!-- ──────────────── PÁGINA 4 · ECOGRAFÍA ──────────────── -->
+    <article class="leaf" data-page="4">
+      <div class="face face-front">
+        <div class="page-scroll">
+          <p class="chapter">Cap&iacute;tulo IV</p>
+          <h2 class="page-title">Tu primera foto</h2>
+          <div class="rule" aria-hidden="true"></div>
+
+          <div class="sono-wrap">
+            <img src="/img/detalle.png" alt="" class="page-sticker sticker-tl" />
+            <img src="/img/detalle.png" alt="" class="page-sticker sticker-br" />
+            <div class="sono-frame">
+              <img src="/img/ecografia.jpg" alt="" class="sono-img" />
+              <div class="sono-fallback">&#128151;</div>
+            </div>
+          </div>
+
+          <p class="sono-caption">As&iacute; te vimos por primera vez, {{event.baby.display}}</p>
+        </div>
+        <span class="page-num">4</span>
+      </div>
+      <div class="face face-back"><div class="back-mark" aria-hidden="true"></div></div>
+    </article>
+
+    <!-- ──────────────── PÁGINA 5 · CARTA DE LOS PADRES ──────────────── -->
+    <article class="leaf" data-page="5">
+      <div class="face face-front letter-page">
+        <div class="page-scroll">
+          <p class="chapter">{{event.letter.eyebrow}}</p>
+          <h2 class="page-title">{{event.letter.title}}</h2>
+          <div class="rule" aria-hidden="true"></div>
+
+          <div class="letter">
+            {{#each event.letter.paragraphs}}
+              <p class="letter-p">{{this}}</p>
+            {{/each}}
+          </div>
+
+          <p class="letter-sign">{{event.letter.signature}}</p>
+          <p class="letter-names">{{event.parents.dad}} &amp; {{event.parents.mom}}</p>
+          <p class="letter-heart" aria-hidden="true">&#128151;</p>
+        </div>
+        <span class="page-num">5</span>
+      </div>
+      <div class="face face-back"><div class="back-mark" aria-hidden="true"></div></div>
+    </article>
+
+    <!-- ──────────────── PÁGINA 6 · CONFIRMACIÓN ──────────────── -->
+    <article class="leaf" data-page="6">
+      <div class="face face-front rsvp-page">
+        <div class="page-scroll">
+          <p class="chapter">Cap&iacute;tulo VI</p>
+          <h2 class="page-title">{{event.rsvp.title}}</h2>
+          <div class="rule" aria-hidden="true"></div>
+
+          <p class="rsvp-desc">{{event.rsvp.description}}</p>
+
+          <form id="confirm-form" onsubmit="return false;" novalidate>
+            <div class="form-group">
+              <label for="guest-name">Nombre completo *</label>
+              <input type="text" id="guest-name" autocomplete="name" placeholder="&iquest;C&oacute;mo te llamas?" required />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="guest-phone">Tel&eacute;fono <span class="label-opt">(opcional)</span></label>
+                <input type="tel" id="guest-phone" autocomplete="tel" placeholder="3001234567" />
+              </div>
+              <div class="form-group form-group-sm">
+                <label for="guest-count">Asistentes</label>
+                <select id="guest-count">
+                  <option value="1">1</option><option value="2">2</option>
+                  <option value="3">3</option><option value="4">4</option>
+                  <option value="5">5</option><option value="6">6</option>
+                  <option value="7">7</option><option value="8">8</option>
+                  <option value="9">9</option><option value="10">10</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="guest-wish">Un deseo para {{event.baby.display}} <span class="label-opt">(opcional)</span></label>
+              <textarea id="guest-wish" rows="3" maxlength="400"
+                placeholder="Escr&iacute;bele algo bonito, lo guardaremos para ella..."></textarea>
+              <span id="wish-count" class="wish-count">0 / 400</span>
+            </div>
+
+            <p id="form-error" class="form-error" hidden></p>
+
+            <p class="rsvp-with">&iquest;Con qui&eacute;n confirmas?</p>
+            <div class="confirm-btns">
+              <button type="button" class="btn-confirm btn-dad" data-parent="daniel">
+                &#128241; Pap&aacute; {{event.parents.dad}}
+              </button>
+              <button type="button" class="btn-confirm btn-mom" data-parent="lisseth">
+                &#128241; Mam&aacute; {{event.parents.mom}}
+              </button>
+            </div>
+          </form>
+
+          <!-- Estado: ya confirmado -->
+          <div id="rsvp-done" class="rsvp-done" hidden>
+            <p class="rsvp-done-icon">&#128009;</p>
+            <h3 class="rsvp-done-title">&iexcl;Confirmaci&oacute;n guardada!</h3>
+            <p class="rsvp-done-text">Gracias por acompa&ntilde;arnos en este cap&iacute;tulo.</p>
+            <a id="rsvp-wa-link" href="#" target="_blank" rel="noopener" class="btn-wa">
+              Enviar mensaje por WhatsApp
+            </a>
+            <button type="button" id="rsvp-again" class="btn-again">Confirmar a alguien m&aacute;s</button>
+          </div>
+
+          <div class="counter">
+            <div class="counter-item">
+              <span id="total-count" class="counter-num">0</span>
+              <span class="counter-label">confirmaciones</span>
+            </div>
+            <span class="counter-sep" aria-hidden="true"></span>
+            <div class="counter-item">
+              <span id="total-people" class="counter-num">0</span>
+              <span class="counter-label">personas</span>
+            </div>
+            <span class="counter-sep" aria-hidden="true"></span>
+            <div class="counter-item">
+              <span id="total-wishes" class="counter-num">0</span>
+              <span class="counter-label">deseos</span>
+            </div>
+          </div>
+
+          <div class="closing">
+            <img src="/img/Dragon.png" alt="" class="closing-dragon" />
+            <p class="closing-text">Te esperamos</p>
+            <p class="closing-sub">Con amor, {{event.parents.dad}} &amp; {{event.parents.mom}}</p>
+          </div>
+        </div>
+        <span class="page-num">6</span>
+      </div>
+      <div class="face face-back"><div class="back-mark" aria-hidden="true"></div></div>
+    </article>
+
+  </div><!-- /book -->
+
+  <!-- ── Navegación ── -->
+  <button id="nav-prev" class="nav-arrow nav-prev" aria-label="P&aacute;gina anterior">&lsaquo;</button>
+  <button id="nav-next" class="nav-arrow nav-next" aria-label="P&aacute;gina siguiente">&rsaquo;</button>
+
+  <nav id="page-dots" class="dots" aria-label="P&aacute;ginas del libro"></nav>
+  <p id="swipe-hint" class="swipe-hint">Desliza o toca la flecha para avanzar</p>
+
+</main>
+
+<script src="/js/main.js"></script>
