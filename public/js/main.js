@@ -142,8 +142,41 @@ function reopenBook() {
   }, REOPEN_MS);
 }
 
-document.getElementById('book-reopen')?.addEventListener('click', reopenBook);
 document.getElementById('book-reopen-link')?.addEventListener('click', reopenBook);
+
+/* Arrastrar el libro cerrado hacia el lado que abre (igual que el resto del
+   libro) también lo reabre — un toque simple sigue funcionando igual. */
+const reopenBtn = document.getElementById('book-reopen');
+let closedDrag = null;
+
+reopenBtn?.addEventListener('pointerdown', (e) => {
+  closedDrag = { id: e.pointerId, x0: e.clientX, moved: false };
+  reopenBtn.classList.add('dragging');
+  try { reopenBtn.setPointerCapture(e.pointerId); } catch {}
+});
+
+reopenBtn?.addEventListener('pointermove', (e) => {
+  if (!closedDrag || e.pointerId !== closedDrag.id) return;
+  const dx = e.clientX - closedDrag.x0;
+  if (Math.abs(dx) > 4) closedDrag.moved = true;
+  const follow = Math.max(0, Math.min(70, dx));
+  reopenBtn.style.transform = `translateX(${follow}px) rotateY(${-follow * 0.5}deg)`;
+});
+
+function endClosedDrag(e) {
+  if (!closedDrag || (e && e.pointerId !== closedDrag.id)) return;
+  const dx = e ? e.clientX - closedDrag.x0 : 0;
+  const moved = closedDrag.moved;
+  closedDrag = null;
+  reopenBtn.classList.remove('dragging');
+  reopenBtn.style.transform = '';
+  // Toque simple (sin arrastre real) o arrastre suficiente hacia el lado que
+  // abre → reabre. Arrastre hacia el otro lado o insuficiente → no hace nada.
+  if (!moved || dx > 40) reopenBook();
+}
+
+reopenBtn?.addEventListener('pointerup', endClosedDrag);
+reopenBtn?.addEventListener('pointercancel', endClosedDrag);
 
 function focusPage() {
   const scroll = leaves[current].querySelector('.page-scroll');
