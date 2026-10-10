@@ -59,6 +59,17 @@ Ni las vistas ni el CSS llevan textos de evento. Para cambiar fecha, lugar, dres
 
 La portada (hoja 0) es la única puerta de entrada: su botón **ABRIR EL LIBRO** es el gesto de usuario que permite arrancar el audio (política de autoplay). `openBook()` también se dispara si alguien avanza con swipe desde la portada.
 
+#### Parpadeo al cruzar los 90° ("hinge-veil")
+
+Una hoja que gira sobre su borde izquierdo se ve, en el instante en que pasa por los 90°, proyectada casi de canto: su ancho en pantalla se comprime a casi nada y todo su contenido (colores, texto) queda aplastado en esa franja delgada. Como esa franja va "mostrando" distintas partes comprimidas de la hoja en frames sucesivos, se percibe como un parpadeo claro/oscuro — **es geometría del giro 3D, no un bug de un navegador** (se reprodujo igual en Safari y Chrome).
+
+Dos mitigaciones en `public/css/style.css`:
+1. `perspective: 2800px` en `.book` (antes 1900px) — aplana un poco la proyección, así la franja comprimida es menos extrema.
+2. `@keyframes hinge-veil` apaga la opacidad de `.face` justo en el tramo donde ocurre el cruce, y la devuelve antes de que el usuario note el corte. **El tramo NO está centrado al 50% de la duración**: `--ease` (`cubic-bezier(.22,.61,.36,1)`) es una curva muy adelantada — ya cruza los 90° hacia el **20%** del tiempo transcurrido. Si se cambia `--ease` o `--flip`, hay que recalcular dónde cae el cruce de los 90° y mover los porcentajes del keyframe (actualmente `0%,6% → 1; 16%,24% → 0; 36%,100% → 1`), si no el velo tapa un tramo que ya está quieto y deja pasar el parpadeo real.
+
+#### Invitación a deslizar ("cover-peek")
+
+La portada (hoja 0) trae la clase `cover-peek` en el HTML, que dispara `@keyframes cover-peek` (gira unos grados y vuelve, 3 veces, con una pausa inicial) para invitar a deslizar. `main.js` la quita (`stopCoverPeek()`) en cuanto hay cualquier interacción real — clic en "Abrir", `pointerdown` sobre el libro, o cualquier navegación — para que no choque con el giro real controlado por JS.
 ### Páginas
 
 | Hoja | Contenido |

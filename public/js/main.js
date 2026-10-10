@@ -107,14 +107,20 @@ function focusPage() {
 /* ═══════════════════════════════════════════════════════════════
    Abrir el libro (primer gesto del usuario → arranca el audio)
 ═══════════════════════════════════════════════════════════════ */
+function stopCoverPeek() {
+  leaves[0]?.classList.remove('cover-peek');
+}
+
 function openBook({ silent = false } = {}) {
   opened = true;
+  stopCoverPeek();
   document.body.classList.add('is-open');
   playMusic();
   if (!silent) goTo(1);
 }
 
 btnOpen?.addEventListener('click', () => {
+  stopCoverPeek();
   if (opened) { nextPage(); return; }
   opened = true;
   document.body.classList.add('is-open');
@@ -153,6 +159,7 @@ function leafWidth() {
 }
 
 book.addEventListener('pointerdown', (e) => {
+  stopCoverPeek();
   if (busy || (e.pointerType === 'mouse' && e.button !== 0)) return;
   if (e.target.closest(NO_DRAG)) return;
 
