@@ -17,6 +17,11 @@
   --pink-soft: #fbedf1;
   --berry-deep: #7d1537;
 
+  /* Cielo pastel — mismos tonos que la animación de Pan, para que el paso
+     del video al libro se sienta como la misma escena */
+  --sky: linear-gradient(180deg, #e3b5dd 0%, #f0c6e2 35%, #f9dbea 68%, #fff0ee 100%);
+  --sky-top: #e3b5dd;
+
   --radius: 16px;
   --flip: 900ms;
   --ease: cubic-bezier(.22, .61, .36, 1);
@@ -37,7 +42,7 @@ body {
   font-size: 16px;
   line-height: 1.55;
   color: var(--ink);
-  background: #2b0f24;
+  background: var(--sky-top);
   -webkit-text-size-adjust: 100%;
 }
 
@@ -51,41 +56,74 @@ img { max-width: 100%; display: block; }
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  background: linear-gradient(180deg, #812d50 0%, var(--pink-soft) 100%);
+  background: var(--sky);
 }
 
 .cloud {
   position: absolute;
-  background: radial-gradient(60% 60% at 50% 60%, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(60% 60% at 50% 60%, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0) 70%);
   border-radius: 50%;
-  filter: blur(2px);
+  filter: blur(3px);
   animation: drift linear infinite;
 }
-.cloud-1 { width: 55vw; height: 20vw; left: -15vw; top: 14%;  animation-duration: 90s; }
-.cloud-2 { width: 70vw; height: 24vw; left: -25vw; top: 46%;  animation-duration: 130s; animation-delay: -30s; opacity: .7; }
-.cloud-3 { width: 45vw; height: 16vw; left: -10vw; top: 74%;  animation-duration: 110s; animation-delay: -60s; opacity: .55; }
+.cloud-1 { width: 60vw; height: 22vw; left: -15vw; top: 12%;  animation-duration: 90s; }
+.cloud-2 { width: 80vw; height: 28vw; left: -25vw; top: 48%;  animation-duration: 130s; animation-delay: -30s; opacity: .8; }
+.cloud-3 { width: 70vw; height: 26vw; left: -10vw; top: 78%;  animation-duration: 110s; animation-delay: -60s; opacity: .9; }
 
 @keyframes drift {
   from { transform: translateX(-20vw); }
   to   { transform: translateX(140vw); }
 }
 
+/* Destellos — brillitos blancos de 4 puntas, como los de la animación */
 .spark {
   position: absolute;
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: var(--gold);
-  box-shadow: 0 0 10px 2px rgba(255, 192, 46, .8);
+  width: 10px; height: 10px;
+  background: #fff;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, .9));
   animation: twinkle 3.5s ease-in-out infinite;
 }
 .spark-1 { left: 12%; top: 18%; animation-delay: 0s; }
 .spark-2 { left: 82%; top: 26%; animation-delay: .9s; }
 .spark-3 { left: 25%; top: 68%; animation-delay: 1.8s; }
 .spark-4 { left: 71%; top: 80%; animation-delay: 2.6s; }
+.spark-5 { left: 54%; top: 8%;  animation-delay: .4s;  width: 7px; height: 7px; }
+.spark-6 { left: 90%; top: 62%; animation-delay: 1.3s; width: 7px; height: 7px; }
+.spark-7 { left: 6%;  top: 86%; animation-delay: 2.2s; }
+.spark-8 { left: 38%; top: 92%; animation-delay: 3s;   width: 7px; height: 7px; }
 
 @keyframes twinkle {
   0%, 100% { opacity: .15; transform: scale(.6); }
   50%      { opacity: 1;   transform: scale(1.4); }
+}
+
+/* Estrellas pastel — SVG de puntas redondeadas (#star-shape en la vista).
+   El color sale de `color` (currentColor). */
+.star {
+  position: absolute;
+  color: #ffe27a;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, .85));
+  animation: starFloat 7s ease-in-out infinite;
+}
+.star svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.star-yellow { color: #ffe27a; }
+.star-blue   { color: #9ad7f2; }
+.star-pink   { color: #f6a9c9; }
+
+.star-1 { width: 52px; left: 4%;   top: 7%;     animation-duration: 8s; }
+.star-2 { width: 34px; right: 7%;  top: 15%;    animation-duration: 6.5s; animation-delay: -2s; }
+.star-3 { width: 24px; left: 9%;   top: 45%;    animation-duration: 7.5s; animation-delay: -4s; }
+.star-4 { width: 76px; right: -1%; bottom: 13%; animation-duration: 9s;   animation-delay: -1s; }
+.star-5 { width: 40px; left: 2%;   bottom: 21%; animation-duration: 7s;   animation-delay: -3s; }
+.star-6 { width: 22px; right: 13%; top: 52%;    animation-duration: 6s;   animation-delay: -5s; }
+.star-7 { width: 28px; left: 42%;  top: 2%;     animation-duration: 8.5s; animation-delay: -6s; }
+.star-8 { width: 20px; left: 30%;  bottom: 5%;  animation-duration: 6.8s; animation-delay: -2.5s; }
+.star { height: auto; aspect-ratio: 1; }
+
+@keyframes starFloat {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50%      { transform: translateY(-12px) rotate(6deg); }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -110,7 +148,7 @@ img { max-width: 100%; display: block; }
   min-height: 420px;
   perspective: 2800px;
   perspective-origin: 50% 50%;
-  filter: drop-shadow(0 26px 45px rgba(0, 0, 0, .55));
+  filter: drop-shadow(0 24px 40px rgba(125, 21, 55, .35));
   /* En la regla base (no solo en .closing-out) para que anime igual de ida
      (cerrar) y de vuelta (reabrir) al quitar la clase. */
   transition: transform .6s cubic-bezier(.4, 0, .2, 1), opacity .6s ease;
@@ -182,6 +220,9 @@ img { max-width: 100%; display: block; }
 .leaf.cover-peek {
   animation: cover-peek 2.6s ease-in-out 1s 3 both;
 }
+/* En pausa (incluida la espera inicial) mientras la intro tapa el libro —
+   si no, se gastaría las 3 repeticiones antes de que nadie la vea. */
+.intro:not(.is-out):not([hidden]) ~ .stage .leaf.cover-peek { animation-play-state: paused; }
 @keyframes cover-peek {
   0%, 55%, 100% { transform: rotateY(0deg); }
   16% { transform: rotateY(-22deg); }
@@ -391,18 +432,30 @@ img { max-width: 100%; display: block; }
   position: relative; z-index: 2;
   font-family: 'Caveat', cursive;
   font-weight: 700;
-  font-size: clamp(2rem, 9vw, 2.8rem);
+  font-size: clamp(2.2rem, 10vw, 3rem);
   line-height: 1;
-  color: var(--berry-deep);
-  text-shadow: 0 2px 10px rgba(255, 255, 255, .6);
+  /* Blanco con contorno vino: se lee igual sobre el fondo de la portada que
+     sobre el pijama rosa de la imagen, que a veces queda justo detrás. */
+  color: #fff;
+  text-shadow:
+    -2px -2px 0 var(--berry-deep),  2px -2px 0 var(--berry-deep),
+    -2px  2px 0 var(--berry-deep),  2px  2px 0 var(--berry-deep),
+     0   -2px 0 var(--berry-deep),  0    2px 0 var(--berry-deep),
+    -2px  0   0 var(--berry-deep),  2px  0   0 var(--berry-deep),
+     0    5px 14px rgba(125, 21, 55, .55);
 }
 
+/* Cinta vino con letra blanca — mismo motivo: contraste sobre cualquier fondo */
 .cover-parents {
   position: relative; z-index: 2;
-  font-size: .9rem;
-  font-weight: 700;
+  padding: .3rem .9rem;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 800;
   letter-spacing: 1.5px;
-  color: rgba(125, 21, 55, .8);
+  color: #fff;
+  background: rgba(125, 21, 55, .88);
+  box-shadow: 0 4px 12px rgba(125, 21, 55, .35), inset 0 0 0 1px rgba(255, 192, 46, .55);
   text-transform: uppercase;
 }
 
@@ -428,13 +481,6 @@ img { max-width: 100%; display: block; }
 @keyframes breathe {
   0%, 100% { box-shadow: 0 6px 20px rgba(255, 107, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .4); }
   50%      { box-shadow: 0 6px 30px rgba(255, 170, 40, .85), inset 0 1px 0 rgba(255, 255, 255, .4); }
-}
-
-.cover-hint {
-  position: relative; z-index: 2;
-  font-size: .72rem;
-  color: rgba(125, 21, 55, .55);
-  letter-spacing: 1px;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -573,7 +619,7 @@ img { max-width: 100%; display: block; }
 .map-wrap iframe { display: block; }
 
 /* ═══════════════════════════════════════════════════════
-   Página 3 — Cuándo + Cómo venir, divididas 50/50
+   Página 3 — Cuándo + ilustración de la bebé con tetero
 ═══════════════════════════════════════════════════════ */
 .split-half { display: flex; flex-direction: column; }
 .split-title {
@@ -584,24 +630,19 @@ img { max-width: 100%; display: block; }
 }
 .rule-sm { margin: .5rem auto .9rem; }
 
-.split-divider {
-  position: relative;
-  height: 1px;
-  margin: 1.5rem 0 1.3rem;
-  background: linear-gradient(90deg, transparent, var(--paper-edge) 18%, var(--paper-edge) 82%, transparent);
+.when-art {
+  margin-top: 1.2rem;
+  display: grid;
+  place-items: center;
 }
-.split-divider::after {
-  content: '';
-  position: absolute;
-  left: 50%; top: 50%;
-  width: 9px; height: 9px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, #fff6d8 0 15%, #ffbe3c 40%, #f08a16 75%, #b85c05 100%);
-  box-shadow: 0 0 7px rgba(255, 170, 40, .85);
+.when-img {
+  width: auto;
+  max-width: 85%;
+  max-height: 330px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 14px rgba(125, 21, 55, .25));
+  animation: float 5s ease-in-out infinite;
 }
-
-.detail-text { font-size: .95rem; color: var(--ink); }
 
 /* ── Ecografía + stickers de esquina ──────────────────────────────────── */
 .sono-wrap {
@@ -921,7 +962,7 @@ img { max-width: 100%; display: block; }
   z-index: 50;
   font-size: .72rem;
   letter-spacing: .8px;
-  color: rgba(255, 255, 255, .7);
+  color: rgba(125, 21, 55, .7);
   white-space: nowrap;
   animation: hintFade 4s ease-in-out .8s both;
   pointer-events: none;
@@ -1052,6 +1093,191 @@ img { max-width: 100%; display: block; }
 }
 
 /* ═══════════════════════════════════════════════════════
+   Intro — toque inicial + video de Pan
+   ───────────────────────────────────────────────────────
+   Tapa todo (libro, flechas, botón de música) hasta que
+   termina el video. .is-playing oculta el botón inicial y
+   muestra el video; .is-out desvanece la intro completa
+   (.8s — debe coincidir con INTRO_OUT_MS en main.js).
+═══════════════════════════════════════════════════════ */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  /* Transparente: deja ver el mismo .sky (nubes + estrellas) del libro */
+  background: transparent;
+  transition: opacity .8s ease;
+}
+.intro[hidden] { display: none; }
+.intro.is-out { opacity: 0; pointer-events: none; }
+
+/* Mientras la intro tapa la pantalla, el libro y sus controles no se ven
+   (si no, se asomarían detrás del cielo transparente). */
+.stage { transition: opacity .6s ease; }
+.intro:not(.is-out):not([hidden]) ~ .stage,
+.intro:not(.is-out):not([hidden]) ~ .music-toggle { opacity: 0; pointer-events: none; }
+
+/* Entrada del libro al terminar la intro (clase puesta por main.js) */
+.book.entering { animation: bookIn 1s cubic-bezier(.34, 1.4, .64, 1) backwards; }
+@keyframes bookIn {
+  from { opacity: 0; transform: scale(.7) translateY(30px); }
+}
+
+/* Chispas — main.js crea las partículas en el centro del libro */
+.burst {
+  position: fixed;
+  inset: 0;
+  z-index: 450;
+  pointer-events: none;
+  overflow: hidden;
+}
+.burst-p {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  animation: burstFly var(--dur) cubic-bezier(.15, .7, .3, 1) var(--delay) both;
+}
+.burst-p svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.burst-p.is-glint {
+  background: #fff;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+}
+.burst-p:not(.is-glint) { filter: drop-shadow(0 0 6px rgba(255, 255, 255, .9)); }
+@keyframes burstFly {
+  0%   { opacity: 0; transform: translate(0, 0) scale(.2) rotate(0deg); }
+  12%  { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1) rotate(var(--rot)); }
+}
+.burst-ring {
+  position: absolute;
+  width: 40px; height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .95) 0%, rgba(255, 226, 122, .6) 35%, rgba(255, 255, 255, 0) 70%);
+  animation: burstRing .9s ease-out both;
+}
+@keyframes burstRing {
+  from { opacity: 1; transform: scale(.3); }
+  to   { opacity: 0; transform: scale(14); }
+}
+
+.intro-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 16px;
+  text-align: center;
+  transition: opacity .4s ease, transform .4s ease;
+}
+.intro.is-playing .intro-gate {
+  opacity: 0;
+  transform: scale(.92);
+  pointer-events: none;
+}
+
+.intro-eyebrow {
+  font-family: 'Caveat', cursive;
+  font-size: 2.2rem;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(125, 21, 55, .6);
+}
+
+.intro-hint {
+  font-size: .78rem;
+  letter-spacing: 1px;
+  color: rgba(125, 21, 55, .75);
+}
+
+/* El video ocupa toda la pantalla sin recortarse (contain): sirve
+   igual si se exporta vertical (9:16) u horizontal (16:9). */
+.intro-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: transparent; /* las franjas laterales dejan ver el cielo */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .6s ease;
+}
+.intro.is-playing .intro-video { opacity: 1; }
+
+/* En celular vertical el video (9:16) llena la pantalla: los teléfonos son
+   más altos que 9:16, así que `contain` dejaba franjas arriba y abajo.
+   `cover` recorta un poco los lados — Pan va centrada, no se pierde nada. */
+@media (orientation: portrait) {
+  .intro-video { object-fit: cover; }
+}
+
+/* Marco tipo cuadro sobre el video. La "moldura" lila es una sombra
+   gigante (100vmax) que rellena todo lo que queda FUERA del borde
+   redondeado; encima van una línea dorada y una blanca. Solo se ve
+   mientras corre el video (.is-playing) y se va con la intro. */
+.intro { overflow: hidden; }
+.intro-frame {
+  position: absolute;
+  inset:
+    calc(12px + env(safe-area-inset-top))
+    calc(12px + env(safe-area-inset-right))
+    calc(12px + env(safe-area-inset-bottom))
+    calc(12px + env(safe-area-inset-left));
+  z-index: 1;
+  border: 3px solid #fff;
+  border-radius: 26px;
+  box-shadow:
+    0 0 0 4px #ffe27a,
+    0 0 0 100vmax #e7bde0,
+    inset 0 0 22px rgba(125, 21, 55, .25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .6s ease;
+}
+.intro.is-playing .intro-frame { opacity: 1; }
+
+.frame-star {
+  position: absolute;
+  width: 34px;
+  aspect-ratio: 1;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, .9));
+  animation: twinkleStar 2.8s ease-in-out infinite;
+}
+.frame-star svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.fs-tl { top: -11px;    left: -11px; }
+.fs-tr { top: -11px;    right: -11px;  animation-delay: -.7s; }
+.fs-bl { bottom: -11px; left: -11px;   animation-delay: -1.4s; }
+.fs-br { bottom: -11px; right: -11px;  animation-delay: -2.1s; }
+@keyframes twinkleStar {
+  0%, 100% { transform: scale(1) rotate(-8deg); }
+  50%      { transform: scale(1.15) rotate(8deg); }
+}
+
+.intro-skip {
+  position: absolute;
+  right: 28px;
+  bottom: calc(1.8rem + env(safe-area-inset-bottom));
+  z-index: 2;
+  padding: .45rem 1rem;
+  border: 1.5px solid rgba(255, 255, 255, .45);
+  border-radius: 999px;
+  font-family: 'Nunito', sans-serif;
+  font-size: .85rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0, 0, 0, .35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+.intro-skip[hidden] { display: none; }
+
+/* ═══════════════════════════════════════════════════════
    Escena final — el libro se cierra
    ───────────────────────────────────────────────────────
    No hay una "tapa" física que converja: las hojas giran cada una por su
@@ -1074,7 +1300,7 @@ img { max-width: 100%; display: block; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #812d50 0%, var(--pink-soft) 100%);
+  background: var(--sky);
 }
 .book-closing[hidden] { display: none; }
 

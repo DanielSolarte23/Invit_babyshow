@@ -1,18 +1,73 @@
-<!-- Audio de fondo -->
+<!-- Audio de fondo (instrumental en bucle, arranca con el toque de la intro) -->
 <audio id="bg-audio" loop preload="auto">
-  <source src="/audio/babyshower.mpeg" type="audio/mpeg" />
+  <source src="/audio/instrumental.mp3" type="audio/mpeg" />
 </audio>
 
-<!-- Fondo: cielo + nubes Dragon Ball -->
+<!-- ═══════════════════════════════════════════════════════════════
+     INTRO — toque inicial (permiso de audio) + video de Pan
+═══════════════════════════════════════════════════════════════ -->
+<div id="intro" class="intro">
+  <div id="intro-gate" class="intro-gate">
+    <div class="dragon-balls" aria-hidden="true">
+      <span class="db db-1"></span><span class="db db-2"></span><span class="db db-3"></span>
+      <span class="db db-4"></span><span class="db db-5"></span><span class="db db-6"></span>
+      <span class="db db-7"></span>
+    </div>
+    <p class="intro-eyebrow">Baby Shower</p>
+    <button type="button" id="btn-start" class="btn-open">TOCA PARA COMENZAR</button>
+    <p class="intro-hint">Sube el volumen &#128266;</p>
+  </div>
+
+  <video id="intro-video" class="intro-video" src="/video/intro.mp4" playsinline preload="auto"></video>
+
+  <!-- Marco tipo cuadro alrededor del video (solo decorativo) -->
+  <div class="intro-frame" aria-hidden="true">
+    <span class="frame-star fs-tl star-yellow"><svg><use href="#star-shape" /></svg></span>
+    <span class="frame-star fs-tr star-blue"><svg><use href="#star-shape" /></svg></span>
+    <span class="frame-star fs-bl star-pink"><svg><use href="#star-shape" /></svg></span>
+    <span class="frame-star fs-br star-yellow"><svg><use href="#star-shape" /></svg></span>
+  </div>
+  <button type="button" id="intro-skip" class="intro-skip" hidden>Saltar &rsaquo;</button>
+</div>
+
+<!-- Forma de estrella pastel (puntas redondeadas por el trazo grueso), reusada
+     por el cielo y por las chispas de entrada del libro -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="star-shape" viewBox="0 0 100 100">
+    <path d="M50 12 L61.2 36.6 L88 39.6 L68.1 57.9 L73.5 84.4 L50 71 L26.5 84.4 L31.9 57.9 L12 39.6 L38.8 36.6 Z"
+          fill="currentColor" stroke="currentColor" stroke-width="14" stroke-linejoin="round" />
+    <path d="M50 12 L61.2 36.6 L88 39.6 L68.1 57.9 L73.5 84.4 L50 71 L26.5 84.4 L31.9 57.9 L12 39.6 L38.8 36.6 Z"
+          fill="#fff" opacity=".35" transform="translate(16 12) scale(.6)" />
+  </symbol>
+</svg>
+
+<!-- Fondo: cielo pastel + nubes + estrellas (paleta de la animación de Pan) -->
 <div class="sky" aria-hidden="true">
   <span class="cloud cloud-1"></span>
   <span class="cloud cloud-2"></span>
   <span class="cloud cloud-3"></span>
+
+  <span class="star star-1 star-yellow"><svg><use href="#star-shape" /></svg></span>
+  <span class="star star-2 star-blue"><svg><use href="#star-shape" /></svg></span>
+  <span class="star star-3 star-pink"><svg><use href="#star-shape" /></svg></span>
+  <span class="star star-4 star-yellow"><svg><use href="#star-shape" /></svg></span>
+  <span class="star star-5 star-blue"><svg><use href="#star-shape" /></svg></span>
+  <span class="star star-6 star-yellow"><svg><use href="#star-shape" /></svg></span>
+  <span class="star star-7 star-pink"><svg><use href="#star-shape" /></svg></span>
+  <span class="star star-8 star-yellow"><svg><use href="#star-shape" /></svg></span>
+
   <span class="spark spark-1"></span>
   <span class="spark spark-2"></span>
   <span class="spark spark-3"></span>
   <span class="spark spark-4"></span>
+  <span class="spark spark-5"></span>
+  <span class="spark spark-6"></span>
+  <span class="spark spark-7"></span>
+  <span class="spark spark-8"></span>
 </div>
+
+<!-- Chispas al aparecer el libro (main.js las crea y las borra) -->
+<div id="burst" class="burst" aria-hidden="true"></div>
 
 <!-- Toast -->
 <div id="toast-message" class="toast" role="status" aria-live="polite"></div>
@@ -56,7 +111,6 @@
         <p class="cover-parents">{{event.parents.dadFull}} &amp; {{event.parents.momFull}}</p>
 
         <button id="btn-open" class="btn-open">ABRIR EL LIBRO</button>
-        <p class="cover-hint">Sube el volumen &#128266;</p>
       </div>
       <div class="face face-back"><div class="back-mark" aria-hidden="true"></div></div>
     </article>
@@ -90,8 +144,13 @@
           <h2 class="page-title">&iquest;D&oacute;nde?</h2>
           <div class="rule" aria-hidden="true"></div>
 
-          <p class="where-place">{{event.where.place}}</p>
-          <p class="where-address">{{event.where.address}}</p>
+          {{#if event.where.place}}
+            <p class="where-place">{{event.where.place}}</p>
+            <p class="where-address">{{event.where.address}}</p>
+          {{else}}
+            {{!-- Sin nombre de lugar (casa familiar): la dirección pasa a ser el título --}}
+            <p class="where-place">{{event.where.address}}</p>
+          {{/if}}
           <p class="where-city">{{event.where.city}}</p>
 
           <div class="map-wrap">
@@ -138,12 +197,8 @@
             </div>
           </div>
 
-          <div class="split-divider" aria-hidden="true"></div>
-
-          <div class="split-half">
-            <h2 class="split-title">&iquest;C&oacute;mo venir?</h2>
-            <div class="rule rule-sm" aria-hidden="true"></div>
-            <p class="detail-text">{{event.details.dressCode}}</p>
+          <div class="when-art">
+            <img src="/img/bebe-tetero.png" alt="" class="when-img" />
           </div>
         </div>
         <span class="page-num">3</span>

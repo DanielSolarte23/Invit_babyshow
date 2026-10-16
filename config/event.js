@@ -26,23 +26,20 @@ module.exports = {
 
   // ── Página 2 · CUÁNDO ─────────────────────────────────────────────────────
   when: {
-    day: 'Por confirmar',
-    month: 'Por confirmar',
+    day: '15',
+    month: 'Noviembre',
     time: '00:00 hrs',
-    weekday: 'Por confirmar',
+    weekday: 'Domingo',
   },
 
   // ── Página 3 · DÓNDE ──────────────────────────────────────────────────────
   where: {
-    place: 'Por confirmar',
-    address: 'Calle 1 #1-1',
-    city: 'Cali, Colombia',
-    mapQuery: 'Calle 1 #1-1, Cali, Colombia',
-  },
-
-  // ── Página 4 · DETALLES ───────────────────────────────────────────────────
-  details: {
-    dressCode: 'Cómodo y colorido — toques de naranja o azul bienvenidos',
+    place: '',  // vacío => la dirección se muestra como título (casa familiar)
+    address: 'Cra. 27A # 6-52, Barrio Santa Helena',
+    city: 'Popayán, Cauca',
+    // Coordenadas exactas (2°26'49.3"N 76°37'26.9"W) — el pin del mapa
+    // cae justo en el lugar aunque la dirección escrita sea aproximada.
+    mapQuery: '2.447028,-76.624139',
   },
 
   // ── Página 1 · FRASE PARA LA BEBÉ ─────────────────────────────────────────

@@ -212,6 +212,7 @@ navPrev?.addEventListener('click', prevPage);
 
 document.addEventListener('keydown', (e) => {
   if (e.target.matches('input, textarea, select')) return;
+  if (intro && !bookRevealed) return; // el libro aún está tapado por la intro
   if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); nextPage(); }
   if (e.key === 'ArrowLeft'  || e.key === 'PageUp')   { e.preventDefault(); prevPage(); }
 });
@@ -334,10 +335,52 @@ book.addEventListener('pointercancel', endDrag);
 
 /* ═══════════════════════════════════════════════════════════════
    Música
+   ───────────────────────────────────────────────────────────────
+   El volumen va por un GainNode de Web Audio porque en iPhone
+   `audio.volume` es de solo lectura (siempre 1) — sin esto no se
+   podría bajar el instrumental mientras habla el video.
 ═══════════════════════════════════════════════════════════════ */
+const MUSIC_VOL    = 0.35;  // volumen normal del instrumental
+const MUSIC_DUCKED = 0.12;  // mientras suena la voz del video
+
+let musicGain = null;
+
+if (bgAudio) bgAudio.volume = MUSIC_VOL; // respaldo si no hay Web Audio
+
+// Debe llamarse dentro de un gesto del usuario (si no, el contexto nace
+// suspendido y el audio que pasa por él queda mudo).
+function setupMusicGain() {
+  if (musicGain || !bgAudio) return;
+  try {
+    // Sin esto, iOS trata Web Audio como sonido de "timbre" y el
+    // interruptor de silencio del iPhone apaga la música.
+    if (navigator.audioSession) navigator.audioSession.type = 'playback';
+
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new Ctx();
+    const gain = ctx.createGain();
+    ctx.createMediaElementSource(bgAudio).connect(gain).connect(ctx.destination);
+    ctx.resume();
+    bgAudio.volume = 1;
+    gain.gain.value = MUSIC_VOL;
+    musicGain = gain;
+  } catch {
+    musicGain = null; // se queda con audio.volume
+  }
+}
+
+function setMusicVolume(vol, seconds = 0) {
+  if (!musicGain) { if (bgAudio) bgAudio.volume = vol; return; }
+  const g = musicGain.gain;
+  const t = musicGain.context.currentTime;
+  g.cancelScheduledValues(t);
+  g.setValueAtTime(g.value, t);
+  g.linearRampToValueAtTime(vol, t + seconds);
+}
+
 function playMusic() {
   if (!bgAudio) return;
-  bgAudio.volume = 0.35;
+  musicGain?.context.resume();
   bgAudio.play()
     .then(() => musicBtn?.classList.remove('is-off'))
     .catch(() => musicBtn?.classList.add('is-off'));
@@ -350,8 +393,142 @@ musicBtn?.addEventListener('click', () => {
   } else {
     bgAudio.pause();
     musicBtn.classList.add('is-off');
+    // Si la voz de Pan aún suena sobre el libro, silenciar también la corta
+    if (bookRevealed && !voiceDone) endVoice();
   }
 });
+
+/* ═══════════════════════════════════════════════════════════════
+   Intro — toque inicial + video de Pan
+   ───────────────────────────────────────────────────────────────
+   El toque en "TOCA PARA COMENZAR" es el gesto que desbloquea el
+   sonido: arranca a la vez el video (solo voz) y el instrumental
+   (bajito). Dos momentos separados:
+
+   - revealBook(): en el segundo BOOK_AT del video, la imagen se
+     desvanece y entra el libro con chispas. El video SIGUE
+     reproduciéndose invisible, así la voz de Pan continúa sobre
+     el libro.
+   - endVoice(): cuando el video termina (o "Saltar"), se detiene la
+     voz, el instrumental sube de volumen y se libera el video.
+
+   Si el video falta o no carga, el toque lleva directo al libro.
+═══════════════════════════════════════════════════════════════ */
+const intro      = document.getElementById('intro');
+const introVideo = document.getElementById('intro-video');
+const introSkip  = document.getElementById('intro-skip');
+const btnStart   = document.getElementById('btn-start');
+const burst      = document.getElementById('burst');
+
+const BOOK_AT      = 10;  // segundo del video en que aparece el libro
+const INTRO_OUT_MS = 800; // debe coincidir con la transición .8s de .intro
+
+let bookRevealed = false;
+let voiceDone    = false;
+let videoBroken  = !introVideo || !!introVideo.error;
+
+introVideo?.addEventListener('error', () => {
+  videoBroken = true;
+  if (intro?.classList.contains('is-playing')) endVoice();
+});
+introVideo?.addEventListener('ended', endVoice);
+
+btnStart?.addEventListener('click', () => {
+  setupMusicGain();
+  playMusic();
+
+  if (videoBroken) { endVoice(); return; }
+
+  setMusicVolume(MUSIC_DUCKED);
+  introVideo.play()
+    .then(() => {
+      intro.classList.add('is-playing');
+      introSkip.hidden = false;
+      watchBookCue();
+    })
+    .catch(endVoice);
+});
+
+introSkip?.addEventListener('click', endVoice);
+
+// rAF en vez de `timeupdate` (que solo dispara ~4 veces por segundo y
+// podía llegar hasta 250ms tarde al segundo exacto).
+function watchBookCue() {
+  if (bookRevealed || voiceDone) return;
+  if (introVideo.currentTime >= BOOK_AT) { revealBook(); return; }
+  requestAnimationFrame(watchBookCue);
+}
+
+function revealBook() {
+  if (bookRevealed || !intro) return;
+  bookRevealed = true;
+
+  introSkip.hidden = true;
+  intro.classList.add('is-out'); // la imagen se va; el audio del video no
+
+  book.classList.add('entering');
+  sparkBurst();
+}
+
+book.addEventListener('animationend', (e) => {
+  if (e.target === book) book.classList.remove('entering');
+});
+
+function endVoice() {
+  if (voiceDone || !intro) return;
+  voiceDone = true;
+
+  introVideo?.pause();
+  setMusicVolume(MUSIC_VOL, 1.5);
+  revealBook();
+
+  window.setTimeout(() => {
+    intro.hidden = true;
+    introVideo?.removeAttribute('src'); // libera el video de memoria
+    introVideo?.load();
+  }, INTRO_OUT_MS);
+}
+
+/* ── Chispas: estrellas pastel + destellos que salen del centro del libro ── */
+const BURST_COLORS = ['#ffe27a', '#9ad7f2', '#f6a9c9', '#ffe27a'];
+
+function sparkBurst() {
+  if (!burst) return;
+  const r  = book.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  const reach = Math.min(window.innerWidth, window.innerHeight) * 0.55;
+
+  const ring = document.createElement('span');
+  ring.className = 'burst-ring';
+  ring.style.left = `${cx}px`;
+  ring.style.top  = `${cy}px`;
+  burst.appendChild(ring);
+
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('span');
+    const glint = i % 3 === 0;
+    const angle = (i / 28) * Math.PI * 2 + Math.random() * 0.4;
+    const dist  = reach * (0.45 + Math.random() * 0.55);
+
+    p.className = glint ? 'burst-p is-glint' : 'burst-p';
+    if (!glint) {
+      p.style.color = BURST_COLORS[i % BURST_COLORS.length];
+      p.innerHTML = '<svg><use href="#star-shape" /></svg>';
+    }
+    p.style.left = `${cx}px`;
+    p.style.top  = `${cy}px`;
+    p.style.setProperty('--size',  `${glint ? 8 + Math.random() * 8 : 14 + Math.random() * 16}px`);
+    p.style.setProperty('--dx',    `${Math.cos(angle) * dist}px`);
+    p.style.setProperty('--dy',    `${Math.sin(angle) * dist}px`);
+    p.style.setProperty('--rot',   `${(Math.random() - 0.5) * 360}deg`);
+    p.style.setProperty('--dur',   `${0.9 + Math.random() * 0.6}s`);
+    p.style.setProperty('--delay', `${Math.random() * 0.15}s`);
+    burst.appendChild(p);
+  }
+
+  window.setTimeout(() => { burst.innerHTML = ''; }, 2000);
+}
 
 /* ═══════════════════════════════════════════════════════════════
    Contador de deseos (textarea)

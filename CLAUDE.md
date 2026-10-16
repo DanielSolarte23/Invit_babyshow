@@ -57,7 +57,27 @@ Ni las vistas ni el CSS llevan textos de evento. Para cambiar fecha, lugar, dres
 - Arrastre: `pointerdown/move/up` sobre `#book` con `setPointerCapture`. El eje se decide una sola vez tras 8px de movimiento (`drag.axis`); si resulta vertical se abandona el arrastre y el scroll de la página funciona normal (`touch-action: pan-y`). Pasar del 28% de giro confirma el cambio de hoja.
 - Navegar también funciona con las flechas, el teclado (←/→) y los puntos inferiores.
 
-La portada (hoja 0) es la única puerta de entrada: su botón **ABRIR EL LIBRO** es el gesto de usuario que permite arrancar el audio (política de autoplay). `openBook()` también se dispara si alguien avanza con swipe desde la portada.
+La portada (hoja 0) tiene el botón **ABRIR EL LIBRO**. `openBook()` también se dispara si alguien avanza con swipe desde la portada. El audio ya no arranca aquí sino en la intro (ver abajo); `playMusic()` se sigue llamando por si acaso, pero es inofensivo si ya suena.
+
+#### Intro (`#intro`) — antes del libro
+
+Capa fija (`z-index: 400`) que tapa todo al cargar. Su botón **TOCA PARA COMENZAR** (`#btn-start`) es el gesto de usuario que desbloquea el sonido (política de autoplay) y arranca **dos capas a la vez**:
+
+- `#intro-video` (`/video/intro.mp4`, 20–30 s) — trae **solo la voz** de Pan. El instrumental **no** va mezclado dentro del video.
+- `#bg-audio` (`/audio/instrumental.mp3`) — el instrumental en bucle, que suena todo el tiempo que la tarjeta esté abierta.
+
+Dos momentos separados, mientras el instrumental suena bajito (`MUSIC_DUCKED`):
+
+- `revealBook()` — en el segundo `BOOK_AT` (10) del video, detectado con un bucle `requestAnimationFrame` (no `timeupdate`, que llega hasta 250 ms tarde). La intro recibe `.is-out` (se desvanece, `INTRO_OUT_MS` = 800 ms, debe coincidir con la transición `.8s`), el libro entra con `.entering` (`@keyframes bookIn`) y `sparkBurst()` lanza chispas (estrellas pastel + destellos) desde el centro del libro en `#burst`. **El video sigue reproduciéndose invisible**: la voz de Pan continúa sobre el libro. Por eso la intro no se oculta con `hidden` aquí, solo con opacidad.
+- `endVoice()` — al terminar el video (`ended`), con **Saltar** (`#intro-skip`, solo visible antes del segundo 10) o al silenciar con el botón de música. Pausa el video, sube el instrumental a `MUSIC_VOL` en 1.5 s, llama a `revealBook()` si aún no pasó (video de menos de 10 s, o saltado), oculta la intro y libera el video. La música nunca se corta.
+
+Sobre el video va `.intro-frame`, un marco tipo cuadro (en prueba): la moldura lila es una `box-shadow` de `100vmax` que rellena todo lo que queda fuera del borde redondeado, más una línea dorada y otra blanca y una estrella pastel en cada esquina. Solo se ve con `.is-playing`. Para quitarlo basta con borrar el `<div class="intro-frame">` de la vista.
+
+Mientras la intro no tenga `.is-out`, el CSS oculta `.stage` y `.music-toggle` (la intro es transparente para dejar ver el cielo) y deja en pausa la animación `cover-peek` de la portada, que si no se gastaría antes de verse.
+
+El volumen va por un `GainNode` de Web Audio (`setupMusicGain()`, creado dentro del gesto) porque en iPhone `audio.volume` es de solo lectura. `navigator.audioSession.type = 'playback'` evita que el interruptor de silencio del iPhone apague la música al pasar por Web Audio. Si Web Audio falla, `setMusicVolume()` cae a `audio.volume`.
+
+Si el video falta o no carga (`videoBroken`), el toque lleva directo al libro con la música sonando. El teclado (←/→) se ignora hasta `revealBook()`.
 
 #### Escena final (`#book-closing`)
 
@@ -89,7 +109,7 @@ La portada (hoja 0) trae la clase `cover-peek` en el HTML, que dispara `@keyfram
 | 0 | Portada — esferas, PNG de la bebé, nombres, botón de apertura |
 | 1 | Capítulo I — frase para la bebé (`event.phrase`) |
 | 2 | Capítulo II — dónde + mapa embebido (`event.where`) |
-| 3 | Capítulo III — cuándo + cómo venir, fusionadas en una sola hoja divida 50/50 (`.split-half` × 2 con su propio título cada una), contenido en `event.when` y `event.details` |
+| 3 | Capítulo III — cuándo (`event.when`) + ilustración de la bebé con tetero (`/img/bebe-tetero.png`, flotando con la misma animación `float` de la portada). La sección "¿Cómo venir?" / dress code se eliminó |
 | 4 | Capítulo IV — ecografía (`/img/ecografia.jpg`), decorada con dos stickers de esquina (`/img/detalle.png`) |
 | 5 | Capítulo V — carta de los padres (`event.letter`) |
 | 6 | Capítulo VI — formulario, contador y cierre (`event.rsvp`) |
@@ -135,13 +155,15 @@ Doble capa: índice único en MongoDB por teléfono + flag `bs_confirmado` en `l
 |------|-----------|--------|
 | `public/img/bebe.png` | PNG de la portada, fondo transparente | provisional (copiado de `niña.png`) |
 | `public/img/Dragon.png` | Dragón del cierre | ok |
-| `public/audio/babyshower.mpeg` | Música de fondo | provisional (copiado de `rev.mpeg`) |
+| `public/img/bebe-tetero.png` | Ilustración de la hoja 3 | ok — recortada de `imagen_a_cortar.jpg` (JPG con cuadriculado falso + marca de agua): relleno desde los bordes por píxeles claros sin saturación, que el contorno negro detiene, y borde des-mateado hacia negro |
+| `public/audio/instrumental.mp3` | Instrumental de fondo (bucle) | ok (90 s) |
+| `public/video/intro.mp4` | Animación de Pan, **solo voz** (sin instrumental). MP4 H.264 720p, comprimido con ffmpeg desde el original de 1080p | ok (20.9 s, 3.5 MB) |
 
 Si un archivo falta, `main.js` oculta la imagen y la portada cae a un emoji (`.cover-art.no-img`), así que la página nunca se rompe.
 
 ### Tema visual
 
 - Fuentes: **Fredoka One** (títulos) + **Nunito** (cuerpo) + **Caveat** (manuscrita: frase, carta, deseos) — Google Fonts
-- Fondo: cielo Dragon Ball (azul noche → horizonte naranja) con nubes animadas; el libro es papel crema
+- Fondo: cielo pastel lila → rosa (`--sky` / `--sky-top` en `:root`, mismos tonos que la animación de Pan) con nubes blancas, estrellas pastel flotando (amarillo/celeste/rosa) y destellos blancos de 4 puntas. Las estrellas son un `<symbol id="star-shape">` SVG (puntas redondeadas por `stroke-linejoin: round`) reusado en `.sky` y en las chispas; el color sale de `currentColor`. `.intro`, `.sky` y `.book-closing` comparten `--sky`.
 - Colores: papel `#fdf7ea`, naranja `#ff6b00`, oro `#ffc02e`, azul profundo `#0b1b33`, rosa `#e91e63`
 - Sin librerías CSS externas — todo en `public/css/style.css`
