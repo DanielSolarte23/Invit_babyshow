@@ -9,6 +9,9 @@ const Guest = require('./models/Guest');
 const event = require('./config/event');
 
 const app = express();
+// Vercel termina el HTTPS en su proxy: sin esto req.protocol sale "http" y la
+// URL de og:image quedaría en http (WhatsApp a veces no la carga).
+app.set('trust proxy', true);
 const PORT = process.env.PORT || 3001;
 
 app.engine('hbs', engine({
@@ -37,8 +40,17 @@ mongoose
 
 // ── Página principal ──────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
+  // URL absoluta: WhatsApp no acepta rutas relativas en og:image
+  const siteUrl = (process.env.SITE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/$/, '');
+
   res.render('invitation', {
     title: `Baby Shower — ${event.parents.dad} & ${event.parents.mom}`,
+    og: {
+      title: `🍼 Baby Shower de ${event.baby.display}`,
+      description: `${event.parents.dad} & ${event.parents.mom} te invitan a celebrar la llegada de nuestra pequeña saiyajin 💗 ${event.when.weekday} ${event.when.day} de ${event.when.month.toLowerCase()}`,
+      image: `${siteUrl}/img/og-babyshower.jpg`,
+      url: siteUrl,
+    },
     event,
     mapSrc: `https://www.google.com/maps?q=${encodeURIComponent(event.where.mapQuery)}&output=embed`,
   });
