@@ -160,7 +160,7 @@ Doble capa: índice único en MongoDB por teléfono + flag `bs_confirmado` en `l
 |------|-----------|--------|
 | `public/img/bebe.png` | PNG de la portada, fondo transparente | provisional (copiado de `niña.png`) |
 | `public/img/Dragon.png` | Dragón del cierre | ok |
-| `public/img/bebe-tetero.png` | Ilustración de la hoja 3 | ok — recortada de `imagen_a_cortar.jpg` (JPG con cuadriculado falso + marca de agua): relleno desde los bordes por píxeles claros sin saturación, que el contorno negro detiene, y borde des-mateado hacia negro |
+| `public/img/bebe-tetero.png` | Ilustración de la hoja 3 | ok — recortada de un JPG (ya eliminado) con cuadriculado falso + marca de agua: relleno desde los bordes por píxeles claros sin saturación, que el contorno negro detiene, y borde des-mateado hacia negro |
 | `public/audio/instrumental.mp3` | Instrumental de fondo (bucle) | ok (90 s) |
 | `public/video/intro.mp4` | Animación de Pan, **solo voz** (sin instrumental). MP4 H.264 720p, comprimido con ffmpeg desde el original de 1080p | ok (20.9 s, 3.5 MB) |
 

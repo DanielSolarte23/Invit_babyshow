@@ -5,7 +5,9 @@
 | Archivo | Contenido |
 |---------|-----------|
 | `public/img/ecografia.jpg` | Ecografía 3D real de la bebé — página "Tu primera foto" |
-| `public/audio/babyshower.mpeg` | Audio extraído del video de WhatsApp — música de fondo real |
+| `public/audio/instrumental.mp3` | Instrumental de fondo en bucle (suena por Web Audio, ver CLAUDE.md) |
+| `public/video/intro.mp4` | Animación de Pan (solo voz), 720p comprimido |
+| `public/img/bebe-tetero.png` | Ilustración de la hoja 3 (Cuándo), fondo ya recortado |
 
 ## Todavía provisionales (copiados de `RevelacionGen1`, reemplazar cuando tengas el definitivo)
 

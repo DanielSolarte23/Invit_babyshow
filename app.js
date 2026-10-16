@@ -121,6 +121,7 @@ app.get('/admin/babyshower', async (req, res) => {
 
     res.render('admin', {
       title: 'Admin — Baby Shower',
+      bodyClass: 'admin-page', // fondo blanco solo en esta vista
       event,
       guests,
       stats: {
