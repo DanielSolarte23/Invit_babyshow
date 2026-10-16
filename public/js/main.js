@@ -42,6 +42,7 @@ function paint() {
   leaves.forEach((leaf, i) => {
     const flipped = i < current;
     leaf.classList.toggle('flipped', flipped);
+    leaf.classList.toggle('is-current', i === current); // ver .is-current en el CSS (scroll en Android)
     leaf.setAttribute('aria-hidden', i === current ? 'false' : 'true');
     leaf.style.pointerEvents = i === current ? 'auto' : 'none';
     if (!leaf.classList.contains('flipping')) {

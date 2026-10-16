@@ -56,6 +56,7 @@ Ni las vistas ni el CSS llevan textos de evento. Para cambiar fecha, lugar, dres
 - `FLIP_MS` (900 ms) debe coincidir con `--flip` en el CSS.
 - Arrastre: `pointerdown/move/up` sobre `#book` con `setPointerCapture`. El eje se decide una sola vez tras 8px de movimiento (`drag.axis`); si resulta vertical se abandona el arrastre y el scroll de la página funciona normal (`touch-action: pan-y`). Pasar del 28% de giro confirma el cambio de hoja.
 - Navegar también funciona con las flechas, el teclado (←/→) y los puntos inferiores.
+- **Scroll táctil en Android:** dentro de un `preserve-3d` + `backface-visibility`, Chrome no encuentra el `.page-scroll` al tocar con el dedo (solo funcionaba arrastrar la barrita lateral), así que los capítulos largos (carta, formulario) no bajaban. `paint()` pone `.is-current` en la hoja visible, y el CSS la aplana (`transform-style: flat`, cara trasera oculta) mientras no tenga `.flipping` ni `.dragging`. El 3D vuelve solo durante el giro. Se verificó con eventos táctiles simulados por CDP en Chrome: aplanar arregla el scroll; quitar el `setPointerCapture` no cambia nada. No confundir con el `transform: translateZ(0)` de `.page-scroll`, que es el arreglo equivalente para Safari.
 
 La portada (hoja 0) tiene el botón **ABRIR EL LIBRO**. `openBook()` también se dispara si alguien avanza con swipe desde la portada. El audio ya no arranca aquí sino en la intro (ver abajo); `playMusic()` se sigue llamando por si acaso, pero es inofensivo si ya suena.
 

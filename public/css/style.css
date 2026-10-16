@@ -190,6 +190,22 @@ img { max-width: 100%; display: block; }
 .leaf.flipped  { transform: rotateY(-180deg); }
 .leaf.dragging { transition: none; }
 
+/* La hoja visible, cuando está quieta, sale del contexto 3D. En Chrome
+   (Android) el scroll táctil no encuentra el .page-scroll dentro de un
+   `preserve-3d` + `backface-visibility` — solo funcionaba la barrita
+   lateral, y los capítulos largos (carta, formulario) no bajaban con el
+   dedo. El 3D solo hace falta mientras gira: en cuanto empieza un giro
+   (.flipping) o un arrastre (.dragging) estas reglas dejan de aplicar. */
+.leaf.is-current:not(.flipping):not(.dragging) {
+  transform-style: flat;
+  will-change: auto;
+}
+.leaf.is-current:not(.flipping):not(.dragging) > .face-front {
+  backface-visibility: visible;
+  -webkit-backface-visibility: visible;
+}
+.leaf.is-current:not(.flipping):not(.dragging) > .face-back { visibility: hidden; }
+
 /* Sombra que barre la hoja mientras gira */
 .leaf.flipping .face-front::after,
 .leaf.dragging .face-front::after {

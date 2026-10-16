@@ -62,6 +62,7 @@ module.exports = {
       'Llegaste cuando ni sabíamos que te estábamos esperando, y desde ese día todo lo que hacemos tiene tu nombre escrito encima.',
       'Te vamos a enseñar que la fuerza no está en los puños, sino en levantarse. Que perder una pelea no es perder. Que la familia se elige todos los días.',
       'Vas a tener una casa llena de ruido, de comida, de gente que te quiere. Y cuando el mundo te quede grande, aquí vas a encontrar dónde volver.',
+      'Y no llegas sola: Loki, Bruno y Max, tus tres hermanos gatunos, ya andan loquitos por conocerte. Prepárate para siestas compartidas, ronroneos de despertador y uno que otro bigote curioso asomándose a tu cuna.',
       'Apúrate, que ya queremos cargarte.',
     ],
     signature: 'Con todo nuestro amor,',
