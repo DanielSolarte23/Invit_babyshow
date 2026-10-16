@@ -75,7 +75,11 @@ Sobre el video va `.intro-frame`, un marco tipo cuadro (en prueba): la moldura l
 
 Mientras la intro no tenga `.is-out`, el CSS oculta `.stage` y `.music-toggle` (la intro es transparente para dejar ver el cielo) y deja en pausa la animación `cover-peek` de la portada, que si no se gastaría antes de verse.
 
-El volumen va por un `GainNode` de Web Audio (`setupMusicGain()`, creado dentro del gesto) porque en iPhone `audio.volume` es de solo lectura. `navigator.audioSession.type = 'playback'` evita que el interruptor de silencio del iPhone apague la música al pasar por Web Audio. Si Web Audio falla, `setMusicVolume()` cae a `audio.volume`.
+**El instrumental no suena con el `<audio>`.** En celulares dos elementos de medios con sonido no conviven: al arrancar el video el sistema pausaba o rechazaba el mp3, que solo sonaba al tocar el botón de música después del video. Por eso `main.js` descarga el mp3 con `fetch` al cargar la página (`musicData`), y en el gesto `setupMusicGain()` crea el `AudioContext` + `GainNode`. Luego `startBufferMusic()` lo decodifica y lo toca con un `AudioBufferSourceNode` en bucle (sin corte), que sí se mezcla con el video. Silenciar = `audioCtx.suspend()`. El `<audio id="bg-audio">` (`preload="none"`, para no descargarlo dos veces) es solo respaldo si Web Audio falla; en ese caso `musicGain = null` y `setMusicVolume()` usa `audio.volume`.
+
+Estado: `musicOn` lo refleja el botón (`setMusicUi()`); `userMuted` evita que `playMusic()` (que también llaman "Abrir el libro" y el swipe de la portada) reviva la música que el invitado apagó a propósito. Solo el botón de música la vuelve a encender (`playMusic({ fromToggle: true })`).
+
+Niveles: `MUSIC_DUCKED` = 0.45 durante la voz, `MUSIC_VOL` = 0.8 después. El mp3 es suave (~−21 dB) frente a la voz (~−15.5 dB): con valores bajos (0.12) la música quedaba inaudible bajo la voz en un celular. `navigator.audioSession.type = 'playback'` evita que el interruptor de silencio del iPhone apague la música de Web Audio.
 
 Si el video falta o no carga (`videoBroken`), el toque lleva directo al libro con la música sonando. El teclado (←/→) se ignora hasta `revealBook()`.
 

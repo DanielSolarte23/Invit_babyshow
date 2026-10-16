@@ -1,5 +1,6 @@
-<!-- Audio de fondo (instrumental en bucle, arranca con el toque de la intro) -->
-<audio id="bg-audio" loop preload="auto">
+<!-- Instrumental: main.js lo descarga y lo toca por Web Audio; este <audio>
+     es solo el respaldo (preload="none" para no bajarlo dos veces) -->
+<audio id="bg-audio" loop preload="none">
   <source src="/audio/instrumental.mp3" type="audio/mpeg" />
 </audio>
 

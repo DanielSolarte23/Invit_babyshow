@@ -336,9 +336,17 @@ book.addEventListener('pointercancel', endDrag);
 /* ═══════════════════════════════════════════════════════════════
    Música
    ───────────────────────────────────────────────────────────────
-   El volumen va por un GainNode de Web Audio porque en iPhone
-   `audio.volume` es de solo lectura (siempre 1) — sin esto no se
-   podría bajar el instrumental mientras habla el video.
+   El instrumental NO se reproduce con el <audio>: en celulares
+   (sobre todo iPhone) dos elementos de medios con sonido no
+   conviven — al arrancar el video, el sistema pausaba o rechazaba
+   el mp3 y solo sonaba al tocar el botón después del video.
+
+   Por eso el mp3 se descarga al cargar la página, se decodifica a
+   un AudioBuffer y suena por Web Audio (AudioBufferSourceNode en
+   bucle → GainNode), que sí se mezcla con el video. De paso:
+   - el volumen funciona en iPhone (`audio.volume` es solo lectura)
+   - el bucle no tiene corte
+   El <audio> queda solo como respaldo si Web Audio falla.
 ═══════════════════════════════════════════════════════════════ */
 const MUSIC_VOL    = 0.8;   // volumen normal del instrumental
 // El mp3 es suave (~-21 dB) frente a la voz del video (~-15.5 dB): con 0.12
@@ -346,29 +354,43 @@ const MUSIC_VOL    = 0.8;   // volumen normal del instrumental
 // video. 0.45 lo deja ~12 dB bajo la voz: se oye de fondo sin taparla.
 const MUSIC_DUCKED = 0.45;  // mientras suena la voz del video
 
-let musicGain = null;
+let audioCtx    = null;
+let musicGain   = null;   // null => modo respaldo con <audio>
+let musicSource = null;
+let musicOn     = false;
+let userMuted   = false;  // el invitado la apagó a propósito: no la revivas sola
 
-if (bgAudio) bgAudio.volume = MUSIC_VOL; // respaldo si no hay Web Audio
+if (bgAudio) bgAudio.volume = MUSIC_VOL;
+
+// La descarga empieza ya, para que al tocar "Comenzar" esté lista
+const musicSrc  = bgAudio?.querySelector('source')?.src || bgAudio?.src;
+const musicData = musicSrc
+  ? fetch(musicSrc).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null)
+  : Promise.resolve(null);
+
+function setMusicUi(on) {
+  musicOn = on;
+  musicBtn?.classList.toggle('is-off', !on);
+}
 
 // Debe llamarse dentro de un gesto del usuario (si no, el contexto nace
-// suspendido y el audio que pasa por él queda mudo).
+// suspendido y queda mudo).
 function setupMusicGain() {
-  if (musicGain || !bgAudio) return;
+  if (audioCtx) return;
   try {
     // Sin esto, iOS trata Web Audio como sonido de "timbre" y el
     // interruptor de silencio del iPhone apaga la música.
     if (navigator.audioSession) navigator.audioSession.type = 'playback';
 
     const Ctx = window.AudioContext || window.webkitAudioContext;
-    const ctx = new Ctx();
-    const gain = ctx.createGain();
-    ctx.createMediaElementSource(bgAudio).connect(gain).connect(ctx.destination);
-    ctx.resume();
-    bgAudio.volume = 1;
-    gain.gain.value = MUSIC_VOL;
-    musicGain = gain;
+    audioCtx = new Ctx();
+    musicGain = audioCtx.createGain();
+    musicGain.gain.value = MUSIC_VOL;
+    musicGain.connect(audioCtx.destination);
+    audioCtx.resume();
   } catch {
-    musicGain = null; // se queda con audio.volume
+    audioCtx = null;
+    musicGain = null;
   }
 }
 
@@ -381,23 +403,59 @@ function setMusicVolume(vol, seconds = 0) {
   g.linearRampToValueAtTime(vol, t + seconds);
 }
 
-function playMusic() {
+async function startBufferMusic() {
+  if (!musicSource) {
+    const data = await musicData;
+    if (!data) throw new Error('sin mp3');
+    const buffer = await audioCtx.decodeAudioData(data.slice(0));
+    if (musicSource) return; // otra llamada ganó mientras se decodificaba
+    musicSource = audioCtx.createBufferSource();
+    musicSource.buffer = buffer;
+    musicSource.loop = true;
+    musicSource.connect(musicGain);
+    musicSource.start();
+  }
+  // Si la silenciaron mientras se decodificaba, se queda en pausa
+  if (musicOn) await audioCtx.resume();
+  else audioCtx.suspend();
+}
+
+function playFallbackMusic() {
   if (!bgAudio) return;
-  musicGain?.context.resume();
   bgAudio.play()
-    .then(() => musicBtn?.classList.remove('is-off'))
-    .catch(() => musicBtn?.classList.add('is-off'));
+    .then(() => setMusicUi(true))
+    .catch(() => setMusicUi(false));
+}
+
+function playMusic({ fromToggle = false } = {}) {
+  if (userMuted && !fromToggle) return;
+  if (musicOn) return;
+
+  if (!audioCtx) { playFallbackMusic(); return; }
+
+  setMusicUi(true);
+  startBufferMusic().catch(() => {
+    // Web Audio no pudo: vuelve al <audio> con volumen directo
+    musicGain = null;
+    playFallbackMusic();
+  });
+}
+
+function pauseMusic() {
+  setMusicUi(false);
+  if (musicSource) audioCtx.suspend();
+  else bgAudio?.pause();
 }
 
 musicBtn?.addEventListener('click', () => {
-  if (!bgAudio) return;
-  if (bgAudio.paused) {
-    playMusic();
-  } else {
-    bgAudio.pause();
-    musicBtn.classList.add('is-off');
+  if (musicOn) {
+    userMuted = true;
+    pauseMusic();
     // Si la voz de Pan aún suena sobre el libro, silenciar también la corta
     if (bookRevealed && !voiceDone) endVoice();
+  } else {
+    userMuted = false;
+    playMusic({ fromToggle: true });
   }
 });
 
