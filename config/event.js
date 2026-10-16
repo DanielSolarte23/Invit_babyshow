@@ -28,8 +28,8 @@ module.exports = {
   when: {
     day: '14',
     month: 'Noviembre',
-    time: '00:00 hrs',
-    weekday: 'Domingo',
+    time: '03:00 PM',
+    weekday: 'Sábado',
   },
 
   // ── Página 3 · DÓNDE ──────────────────────────────────────────────────────
