@@ -26,7 +26,7 @@ module.exports = {
 
   // ── Página 2 · CUÁNDO ─────────────────────────────────────────────────────
   when: {
-    day: '15',
+    day: '14',
     month: 'Noviembre',
     time: '00:00 hrs',
     weekday: 'Domingo',
