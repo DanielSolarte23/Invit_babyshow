@@ -112,7 +112,7 @@ La portada (hoja 0) trae la clase `cover-peek` en el HTML, que dispara `@keyfram
 | Hoja | Contenido |
 |------|-----------|
 | 0 | Portada — esferas, PNG de la bebé, nombres, botón de apertura |
-| 1 | Capítulo I — frase para la bebé (`event.phrase`) |
+| 1 | Capítulo I — frase para la bebé (`event.phrase`) + carrusel de deseos (`event.wishes`, ver abajo) |
 | 2 | Capítulo II — dónde + mapa embebido (`event.where`) |
 | 3 | Capítulo III — cuándo (`event.when`) + ilustración de la bebé con tetero (`/img/bebe-tetero.png`, flotando con la misma animación `float` de la portada). La sección "¿Cómo venir?" / dress code se eliminó |
 | 4 | Capítulo IV — ecografía (`/img/ecografia.jpg`), decorada con dos stickers de esquina (`/img/detalle.png`) |
@@ -140,16 +140,18 @@ Dos `<img class="page-sticker">` viven **dentro** de `.sono-wrap`, que vive dent
 | GET | `/` | El libro |
 | POST | `/confirm` | Guarda invitado, devuelve `{ success, whatsappUrl }` |
 | GET | `/api/stats` | `{ totalGuests, totalPeople, totalWishes }` |
+| GET | `/api/wishes` | `{ wishes: [texto] }` — solo aprobados y con `event.wishes.minLength`+ caracteres; nunca nombre ni teléfono |
 | GET | `/admin/babyshower` | Panel admin (sin autenticación — ruta oculta) |
 | DELETE | `/admin/guests/:id` | Elimina invitado por ObjectId |
+| PATCH | `/admin/guests/:id/wish` | `{ approved }` → aprueba/oculta el deseo en el carrusel |
 
 ### Modelo Guest (`models/Guest.js`)
 
-- Campos: `name`, `phone`, `numberOfGuests`, `wish`, `confirmedWith` (daniel/lisseth)
+- Campos: `name`, `phone`, `numberOfGuests`, `wish`, `wishApproved` (default `false`), `confirmedWith` (daniel/lisseth)
 - `numberOfGuests` va de 1 a `event.rsvp.maxGuests` (2). Ese único valor de `config/event.js` lo usan el selector del formulario (`guestOptions`, generado en `app.js`), el recorte del servidor en `POST /confirm` y el `max` del esquema
 - Ya **no existe** `prediction` — en un baby shower no hay equipo niño/niña; lo reemplaza `wish`
 - Índice único en `phone` (sparse — permite nulos); los duplicados devuelven HTTP 400 con `error.code === 11000`
-- Virtuales: `confirmedWithDisplay`, `hasWish`
+- Virtuales: `confirmedWithDisplay`, `hasWish`, `wishLongEnough`
 
 ### Prevención de duplicados
 
@@ -173,3 +175,7 @@ Si un archivo falta, `main.js` oculta la imagen y la portada cae a un emoji (`.c
 - Fondo: cielo pastel lila → rosa (`--sky` / `--sky-top` en `:root`, mismos tonos que la animación de Pan) con nubes blancas, estrellas pastel flotando (amarillo/celeste/rosa) y destellos blancos de 4 puntas. Las estrellas son un `<symbol id="star-shape">` SVG (puntas redondeadas por `stroke-linejoin: round`) reusado en `.sky` y en las chispas; el color sale de `currentColor`. `.intro`, `.sky` y `.book-closing` comparten `--sky`.
 - Colores: papel `#fdf7ea`, naranja `#ff6b00`, oro `#ffc02e`, azul profundo `#0b1b33`, rosa `#e91e63`
 - Sin librerías CSS externas — todo en `public/css/style.css`
+
+### Carrusel de deseos (hoja 1)
+
+Debajo de la frase del Capítulo I, `#wishes` muestra los deseos de los invitados **sin el nombre de quien los escribió**. Un deseo sale solo si se aprobó en el panel admin (columna "En la tarjeta", botón Mostrar/Visible → `PATCH /admin/guests/:id/wish`) **y** tiene al menos `event.wishes.minLength` caracteres; los más cortos aparecen en el admin como "Muy corto", sin botón. `loadWishes()` en `main.js` los pide a `/api/wishes`, los baraja, los pinta con `textContent` (nunca como HTML) y rota uno cada `event.wishes.intervalMs`. Todas las tarjetas comparten la misma celda del grid para que el bloque mida lo que el deseo más largo y la hoja no salte. Si no hay ninguno aprobado, el bloque queda `hidden`. Cada deseo tiene `max-height` y scroll propio, así el recuadro nunca crece más allá de la hoja. Se puede pasar de deseo deslizando sobre `.wishes-stage` (el `pointerdown` del libro lo ignora vía `NO_DRAG_WISH`, así que ahí el gesto horizontal no voltea la hoja) o con las flechas ‹ ›; cualquier interacción reinicia el temporizador. No se usa `click` en la tarjeta: el libro captura el puntero (`setPointerCapture`) y el clic no llegaría.

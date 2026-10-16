@@ -17,6 +17,10 @@
       <span class="stat-number">{{stats.totalWishes}}</span>
       <span class="stat-label">&#128151; Deseos escritos</span>
     </div>
+    <div class="stat-card stat-wish">
+      <span id="approved-count" class="stat-number">{{stats.approvedWishes}}</span>
+      <span class="stat-label">&#10024; En la tarjeta</span>
+    </div>
   </div>
 
   {{#if guests.length}}
@@ -28,6 +32,7 @@
           <th>Tel&eacute;fono</th>
           <th>Asist.</th>
           <th>Deseo para la beb&eacute;</th>
+          <th>En la tarjeta</th>
           <th>Confirm&oacute; con</th>
           <th>Fecha</th>
           <th></th>
@@ -41,6 +46,16 @@
           <td class="td-center">{{numberOfGuests}}</td>
           <td class="td-wish">
             {{#if hasWish}}<span class="wish-quote">{{wish}}</span>{{else}}<span class="td-empty">&mdash;</span>{{/if}}
+          </td>
+          <td class="td-approve">
+            {{#if wishLongEnough}}
+              <button class="btn-approve{{#if wishApproved}} is-on{{/if}}" data-approved="{{#if wishApproved}}1{{else}}0{{/if}}"
+                      onclick="toggleWish('{{_id}}', this)">{{#if wishApproved}}&#10003; Visible{{else}}Mostrar{{/if}}</button>
+            {{else if hasWish}}
+              <span class="td-empty" title="Menos de {{@root.event.wishes.minLength}} caracteres">Muy corto</span>
+            {{else}}
+              <span class="td-empty">&mdash;</span>
+            {{/if}}
           </td>
           <td>{{confirmedWithDisplay}}</td>
           <td class="td-date">{{getFormattedDate}}</td>
@@ -58,6 +73,32 @@
 </div>
 
 <script>
+function refreshApprovedCount() {
+  document.getElementById('approved-count').textContent =
+    document.querySelectorAll('.btn-approve.is-on').length;
+}
+
+async function toggleWish(id, btn) {
+  const approved = btn.dataset.approved !== '1';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/admin/guests/' + id + '/wish', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ approved }),
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error();
+    btn.dataset.approved = data.approved ? '1' : '0';
+    btn.classList.toggle('is-on', data.approved);
+    btn.innerHTML = data.approved ? '&#10003; Visible' : 'Mostrar';
+    refreshApprovedCount();
+  } catch {
+    alert('Error al guardar');
+  }
+  btn.disabled = false;
+}
+
 async function deleteGuest(id, btn) {
   if (!confirm('¿Eliminar este invitado?')) return;
   btn.disabled = true;
@@ -66,6 +107,7 @@ async function deleteGuest(id, btn) {
     const data = await res.json();
     if (data.success) {
       btn.closest('tr').remove();
+      refreshApprovedCount();
     } else {
       alert('Error al eliminar');
       btn.disabled = false;

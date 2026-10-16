@@ -128,6 +128,20 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
+// ── Deseos públicos (carrusel de la hoja 1) ───────────────────────────────────
+// Solo el texto: nunca nombre ni teléfono.
+app.get('/api/wishes', async (req, res) => {
+  try {
+    const guests = await Guest.find({ wishApproved: true }, { wish: 1 });
+    const wishes = guests
+      .map((g) => (g.wish || '').trim())
+      .filter((w) => w.length >= event.wishes.minLength);
+    res.json({ wishes });
+  } catch {
+    res.status(500).json({ error: 'Error al obtener deseos' });
+  }
+});
+
 // ── Panel de administración ───────────────────────────────────────────────────
 app.get('/admin/babyshower', async (req, res) => {
   try {
@@ -142,6 +156,7 @@ app.get('/admin/babyshower', async (req, res) => {
         totalGuests: guests.length,
         totalPeople: guests.reduce((sum, g) => sum + g.numberOfGuests, 0),
         totalWishes: guests.filter((g) => g.wish && g.wish.trim()).length,
+        approvedWishes: guests.filter((g) => g.wishApproved && g.wishLongEnough).length,
       },
     });
   } catch (error) {
@@ -156,6 +171,21 @@ app.delete('/admin/guests/:id', async (req, res) => {
     const deleted = await Guest.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ success: false, message: 'No encontrado' });
     res.json({ success: true });
+  } catch {
+    res.status(500).json({ success: false });
+  }
+});
+
+// ── Aprobar / ocultar un deseo en el carrusel ─────────────────────────────────
+app.patch('/admin/guests/:id/wish', async (req, res) => {
+  try {
+    const guest = await Guest.findByIdAndUpdate(
+      req.params.id,
+      { wishApproved: Boolean(req.body.approved) },
+      { new: true }
+    );
+    if (!guest) return res.status(404).json({ success: false, message: 'No encontrado' });
+    res.json({ success: true, approved: guest.wishApproved });
   } catch {
     res.status(500).json({ success: false });
   }

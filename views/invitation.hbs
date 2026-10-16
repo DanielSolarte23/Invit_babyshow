@@ -131,6 +131,18 @@
           </div>
 
           <p class="phrase-to">Para {{event.baby.display}} &#128151;</p>
+
+          <!-- Carrusel de deseos: main.js lo llena desde /api/wishes y lo
+               muestra solo si hay al menos uno aprobado -->
+          <section id="wishes" class="wishes" data-interval="{{event.wishes.intervalMs}}" hidden>
+            <p class="wishes-title">&#10024; {{event.wishes.title}} &#10024;</p>
+            <div id="wishes-stage" class="wishes-stage"></div>
+            <div class="wishes-nav">
+              <button type="button" id="wishes-prev" class="wishes-arrow" aria-label="Deseo anterior">&lsaquo;</button>
+              <span id="wishes-count" class="wishes-count" aria-hidden="true"></span>
+              <button type="button" id="wishes-next" class="wishes-arrow" aria-label="Deseo siguiente">&rsaquo;</button>
+            </div>
+          </section>
         </div>
         <span class="page-num">1</span>
       </div>

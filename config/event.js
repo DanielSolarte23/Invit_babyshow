@@ -54,6 +54,16 @@ module.exports = {
     ],
   },
 
+  // ── Página 1 · CARRUSEL DE DESEOS ─────────────────────────────────────────
+  // Solo se muestra el texto (nunca quién lo escribió). Un deseo sale en la
+  // tarjeta si se aprobó en el panel admin y tiene al menos `minLength`
+  // caracteres — los vacíos o muy cortos ("felicidades") nunca aparecen.
+  wishes: {
+    title: 'Deseos para ella',
+    minLength: 20,
+    intervalMs: 9000,   // tiempo que se queda cada deseo en pantalla
+  },
+
   // ── Página 5 · CARTA DE LOS PADRES ────────────────────────────────────────
   letter: {
     eyebrow: 'Capítulo V',

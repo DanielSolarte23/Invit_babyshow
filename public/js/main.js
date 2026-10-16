@@ -234,6 +234,7 @@ leaves.forEach((_, i) => {
 let drag = null;
 
 const NO_DRAG = 'input, textarea, select, button, a, iframe';
+const NO_DRAG_WISH = '.wishes-stage';
 
 function leafWidth() {
   return book.getBoundingClientRect().width || 1;
@@ -243,6 +244,8 @@ book.addEventListener('pointerdown', (e) => {
   stopCoverPeek();
   if (busy || (e.pointerType === 'mouse' && e.button !== 0)) return;
   if (e.target.closest(NO_DRAG)) return;
+  // Sobre el carrusel de deseos el gesto horizontal cambia de deseo, no de hoja
+  if (e.target.closest(NO_DRAG_WISH)) return;
 
   // Captura el puntero para que el arrastre sobreviva al salir del libro
   try { book.setPointerCapture(e.pointerId); } catch {}
@@ -737,3 +740,86 @@ try {
 } catch {}
 
 document.addEventListener('DOMContentLoaded', loadStats);
+loadWishes();
+
+/* ═══════════════════════════════════════════════════════════════
+   Carrusel de deseos (hoja 1)
+   ───────────────────────────────────────────────────────────────
+   Todas las tarjetas ocupan la misma celda del grid, así el bloque
+   mide lo que el deseo más largo y la hoja no salta al rotar.
+═══════════════════════════════════════════════════════════════ */
+async function loadWishes() {
+  const box   = document.getElementById('wishes');
+  const stage = document.getElementById('wishes-stage');
+  const count = document.getElementById('wishes-count');
+  if (!box || !stage) return;
+
+  let wishes;
+  try {
+    const res = await fetch('/api/wishes');
+    ({ wishes = [] } = await res.json());
+  } catch {
+    return; // sin deseos el bloque sigue oculto
+  }
+  if (!wishes.length) return;
+
+  // Orden aleatorio: cada invitado empieza viendo un deseo distinto
+  for (let i = wishes.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [wishes[i], wishes[j]] = [wishes[j], wishes[i]];
+  }
+
+  wishes.forEach((text, i) => {
+    const card = document.createElement('blockquote');
+    card.className = 'wish-card' + (i === 0 ? ' is-active' : '');
+    card.textContent = text; // textContent: el deseo nunca se interpreta como HTML
+    stage.appendChild(card);
+  });
+  box.hidden = false;
+
+  if (wishes.length < 2) return;
+
+  const cards = stage.children;
+  const ms = Number(box.dataset.interval) || 9000;
+  let idx = 0;
+  let timer;
+
+  // Cada interacción (deslizar, flechas, scroll de un deseo largo) reinicia
+  // la cuenta, para que el deseo no cambie mientras alguien lo está leyendo
+  const restart = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => show(idx + 1), ms);
+  };
+
+  function show(i) {
+    cards[idx].classList.remove('is-active');
+    idx = (i + cards.length) % cards.length;
+    cards[idx].scrollTop = 0;
+    cards[idx].classList.add('is-active');
+    count.textContent = `${idx + 1} / ${cards.length}`;
+    restart();
+  }
+
+  document.getElementById('wishes-prev').addEventListener('click', () => show(idx - 1));
+  document.getElementById('wishes-next').addEventListener('click', () => show(idx + 1));
+  stage.addEventListener('scroll', restart, true); // scroll no burbujea: captura
+
+  // Deslizar sobre el recuadro cambia de deseo (el libro lo ignora, ver NO_DRAG_WISH)
+  let swipe = null;
+  stage.addEventListener('pointerdown', (e) => {
+    swipe = { id: e.pointerId, x0: e.clientX, y0: e.clientY };
+  });
+  stage.addEventListener('pointerup', (e) => {
+    if (!swipe || e.pointerId !== swipe.id) return;
+    const dx = e.clientX - swipe.x0;
+    const dy = e.clientY - swipe.y0;
+    swipe = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      show(dx < 0 ? idx + 1 : idx - 1);
+    }
+  });
+  stage.addEventListener('pointercancel', () => { swipe = null; });
+
+  box.classList.add('has-nav');
+  show(0);
+}
