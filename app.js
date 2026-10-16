@@ -52,6 +52,8 @@ app.get('/', (req, res) => {
       url: siteUrl,
     },
     event,
+    // 1..maxGuests para el selector de asistentes
+    guestOptions: Array.from({ length: event.rsvp.maxGuests }, (_, i) => i + 1),
     mapSrc: `https://www.google.com/maps?q=${encodeURIComponent(event.where.mapQuery)}&output=embed`,
   });
 });
@@ -68,7 +70,7 @@ app.post('/confirm', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Elige con quién confirmas.' });
     }
 
-    const guests = Math.min(Math.max(parseInt(numberOfGuests) || 1, 1), 15);
+    const guests = Math.min(Math.max(parseInt(numberOfGuests) || 1, 1), event.rsvp.maxGuests);
     const cleanWish = (wish || '').trim().slice(0, 400);
 
     const newGuest = new Guest({

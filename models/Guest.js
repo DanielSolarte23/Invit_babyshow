@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
+const event = require('../config/event');
 
 const guestSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   phone: { type: String, trim: true },
-  numberOfGuests: { type: Number, default: 1, min: 1, max: 15 },
+  numberOfGuests: { type: Number, default: 1, min: 1, max: event.rsvp.maxGuests },
   wish: { type: String, trim: true, maxlength: 400 },
   confirmedWith: { type: String, enum: ['daniel', 'lisseth'], required: true },
   confirmationDate: { type: Date, default: Date.now },

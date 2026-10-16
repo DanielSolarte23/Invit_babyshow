@@ -146,6 +146,7 @@ Dos `<img class="page-sticker">` viven **dentro** de `.sono-wrap`, que vive dent
 ### Modelo Guest (`models/Guest.js`)
 
 - Campos: `name`, `phone`, `numberOfGuests`, `wish`, `confirmedWith` (daniel/lisseth)
+- `numberOfGuests` va de 1 a `event.rsvp.maxGuests` (2). Ese único valor de `config/event.js` lo usan el selector del formulario (`guestOptions`, generado en `app.js`), el recorte del servidor en `POST /confirm` y el `max` del esquema
 - Ya **no existe** `prediction` — en un baby shower no hay equipo niño/niña; lo reemplaza `wish`
 - Índice único en `phone` (sparse — permite nulos); los duplicados devuelven HTTP 400 con `error.code === 11000`
 - Virtuales: `confirmedWithDisplay`, `hasWish`

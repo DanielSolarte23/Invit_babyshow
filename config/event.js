@@ -72,5 +72,8 @@ module.exports = {
   rsvp: {
     title: 'Confirma tu asistencia',
     description: 'Nos encantaría tenerte ahí. Déjanos tus datos y, si quieres, un deseo para ella.',
+    // Máximo de personas por invitación — lo usan el selector del formulario,
+    // la validación del servidor (app.js) y el modelo (models/Guest.js)
+    maxGuests: 2,
   },
 };

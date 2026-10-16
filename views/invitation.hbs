@@ -278,11 +278,7 @@
               <div class="form-group form-group-sm">
                 <label for="guest-count">Asistentes</label>
                 <select id="guest-count">
-                  <option value="1">1</option><option value="2">2</option>
-                  <option value="3">3</option><option value="4">4</option>
-                  <option value="5">5</option><option value="6">6</option>
-                  <option value="7">7</option><option value="8">8</option>
-                  <option value="9">9</option><option value="10">10</option>
+                  {{#each guestOptions}}<option value="{{this}}">{{this}}</option>{{/each}}
                 </select>
               </div>
             </div>
