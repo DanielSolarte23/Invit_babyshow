@@ -340,8 +340,11 @@ book.addEventListener('pointercancel', endDrag);
    `audio.volume` es de solo lectura (siempre 1) — sin esto no se
    podría bajar el instrumental mientras habla el video.
 ═══════════════════════════════════════════════════════════════ */
-const MUSIC_VOL    = 0.35;  // volumen normal del instrumental
-const MUSIC_DUCKED = 0.12;  // mientras suena la voz del video
+const MUSIC_VOL    = 0.8;   // volumen normal del instrumental
+// El mp3 es suave (~-21 dB) frente a la voz del video (~-15.5 dB): con 0.12
+// quedaba 24 dB por debajo y en un celular no se oía hasta que acababa el
+// video. 0.45 lo deja ~12 dB bajo la voz: se oye de fondo sin taparla.
+const MUSIC_DUCKED = 0.45;  // mientras suena la voz del video
 
 let musicGain = null;
 
