@@ -35,7 +35,7 @@ module.exports = {
   // ── Página 3 · DÓNDE ──────────────────────────────────────────────────────
   where: {
     place: '',  // vacío => la dirección se muestra como título (casa familiar)
-    address: 'Cra. 27A # 6-52, Barrio Santa Helena',
+    address: 'Calle 7 #27b - 06 Barrio Santa Helena',
     city: 'Popayán, Cauca',
     // Coordenadas exactas (2°26'49.3"N 76°37'26.9"W) — el pin del mapa
     // cae justo en el lugar aunque la dirección escrita sea aproximada.
